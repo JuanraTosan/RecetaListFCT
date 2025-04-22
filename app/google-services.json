@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "606372425976",
+    "project_id": "recetalistfct",
+    "storage_bucket": "recetalistfct.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:606372425976:android:2fc791e5462a5fb9028b0d",
+        "android_client_info": {
+          "package_name": "com.example.recetalistfct"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDga4VxtLY_Om-GCcuM2Q01OTAguqmIFwM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
