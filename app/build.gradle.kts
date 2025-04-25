@@ -73,12 +73,19 @@ dependencies {
     // Firebase BOM: gestiona versiones automáticamente
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
 
-    // 🔐 Authentication
+    // Authentication
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // 🗃 Firestore (base de datos flexible)
-    implementation("com.google.firebase:firebase-firestore-ktx")
+    // Realtime Database (base de datos)
+    implementation("com.google.firebase:firebase-database-ktx")
 
-    // 🧺 Firebase Storage (para imágenes, archivos)
+
+    // Firebase Storage (para imágenes, archivos)
     implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Coil para imágenes
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
 }

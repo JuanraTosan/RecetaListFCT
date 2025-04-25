@@ -1,6 +1,5 @@
-package com.example.recetalistfct
+package com.example.recetalistfct.view
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,18 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.recetalistfct.R
+import com.example.recetalistfct.controller.UsuarioController
 
 @Composable
-fun RegistroScreen(
-    navController: NavHostController
-) {
+fun RegistroScreen(navController: NavHostController) {
     // Estados para los campos de texto y mensajes de error
     var username by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
@@ -35,6 +33,7 @@ fun RegistroScreen(
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var errorMessage by rememberSaveable { mutableStateOf("") }
 
+    val context = LocalContext.current
     //Lo usamos para quitar el teclado de la pantalla:
     val focusManager = LocalFocusManager.current
 
@@ -162,38 +161,18 @@ fun RegistroScreen(
                             errorMessage = "Las contraseñas no coinciden."
                         }
                         else -> {
-                            FirebaseAuth.getInstance()
-                                .createUserWithEmailAndPassword(email,password)
-                                .addOnSuccessListener { authResult ->
-                                    val uid = authResult.user?.uid?: return@addOnSuccessListener
-
-                                    //Guardar datos del usuario en Firestore
-                                    val userData = hashMapOf(
-                                        "username" to username,
-                                        "email" to email
-                                    )
-
-                                    FirebaseFirestore.getInstance().collection("usuario")
-                                        .document(uid)
-                                        .set(userData)
-                                        .addOnSuccessListener {
-                                            val sharedPref = navController.context.getSharedPreferences(
-                                                "user_preferences", Context.MODE_PRIVATE
-                                            )
-
-                                            sharedPref.edit().putString("usuarioId", uid).apply()
-
-                                            navController.navigate("login"){
-                                                popUpTo("register"){inclusive = true}
-                                            }
-                                        }
-                                        .addOnFailureListener { e ->
-                                            errorMessage = "Error al guardar datos del usuario: ${e.localizedMessage}"
-                                        }
-                                }
-                                .addOnFailureListener{ e ->
-                                    errorMessage = "Error al registrar usuario: ${e.localizedMessage}"
-                                }
+                            UsuarioController.registrarUsuario(
+                                username = username ,
+                                email = email,
+                                password = password,
+                                context = context,
+                                onSuccess = {
+                                    navController.navigate("login"){
+                                        popUpTo("register"){inclusive = true}
+                                    }
+                                },
+                                onError = {msg -> errorMessage = msg}
+                            )
                         }
                     }
                 },

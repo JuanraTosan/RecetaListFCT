@@ -1,7 +1,6 @@
-package com.example.recetalistfct
+package com.example.recetalistfct.view
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -18,12 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
+import com.example.recetalistfct.R
+import com.example.recetalistfct.controller.UsuarioController
+import com.example.recetalistfct.session.userSessionManager
 
 @Composable
 fun LoginScreen(
@@ -37,6 +39,7 @@ fun LoginScreen(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -134,31 +137,22 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    if (email.isBlank() || password.isBlank()){
-                        errorMessage = "Debes completar ambos campos"
-                        return@Button
-                    }
-
-                    FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful){
-                                val user = task.result?.user
-                                val uid = user?.uid ?: ""
-
-                                Log.d("LoginScreen", "Firebase login correcto: $uid")
-
-                                //Guardamos el usuario en sesión.
-                                userSessionManager.updateUser(uid)
-
-                                //Navegar a la pantalla principal
-                                navController.navigate("home/$uid"){
+                    if (email.isNotBlank() && password.isNotBlank()){
+                        UsuarioController.loginUsuario(
+                            email = email,
+                            password = password,
+                            context = context,
+                            onSuccess = {usuario ->
+                                userSessionManager.updateUser(usuario.uid)
+                                navController.navigate("home"){
                                     popUpTo("login"){inclusive = true}
                                 }
-                            }else{
-                                errorMessage = task.exception?.localizedMessage?: "Error desconocido al iniciar sesión"
-                                Log.e("LoginScreen", "Error al iniciar sesión", task.exception)
-                            }
-                        }
+                            },
+                            onError = {msg -> errorMessage = msg}
+                        )
+                    }else{
+                        errorMessage = "Rellena todos los campos"
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

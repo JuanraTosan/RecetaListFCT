@@ -1,4 +1,4 @@
-package com.example.recetalistfct
+package com.example.recetalistfct.session
 
 object userSessionManager{
     var currentUserId: String? = null

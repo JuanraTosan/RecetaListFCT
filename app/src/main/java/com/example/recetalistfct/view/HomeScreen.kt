@@ -1,4 +1,4 @@
-package com.example.recetalistfct
+package com.example.recetalistfct.view
 
 import android.util.Log
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -21,20 +21,14 @@ import androidx.navigation.NavHostController
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.recetalistfct.components.BottomBar
+import com.example.recetalistfct.controller.UsuarioController
 import com.google.firebase.auth.FirebaseAuth
-
-data class Receta(
-    val id: String = "",
-    val titulo: String = "",
-    val descripcion: String = "",
-    val autorId: String = ""
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    navController: NavHostController
-) {
+fun HomeScreen(navController: NavHostController) {
     val firebaseUser = FirebaseAuth.getInstance().currentUser
     val userId = firebaseUser?.uid
 
@@ -49,8 +43,9 @@ fun HomeScreen(
 
     // Detectar el estado del teclado
     val imeVisible = LocalDensity.current.density < 0.5
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route ?: "home"
 
-    Log.d("HomeScreen", "Id de usuario ${userId}")
+    Log.d("HomeScreen", "Id de usuario $userId")
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -61,6 +56,17 @@ fun HomeScreen(
             }
     ) {
         Scaffold(
+            bottomBar = {
+                BottomBar(selectedItem = currentDestination) { selected ->
+                    when (selected) {
+                        "map" -> navController.navigate("map_screen")
+                        "carrito" -> navController.navigate("carrito_screen")
+                        "home" -> navController.navigate("home_screen")
+                        "recetas" -> navController.navigate("mis_recetas_screen")
+                        "perfil" -> navController.navigate("PerfilScreen")
+                    }
+                }
+            },
             topBar = {
                 TopAppBar(
                     modifier = Modifier.padding(horizontal = 8.dp),
@@ -133,6 +139,14 @@ fun HomeScreen(
                             .fillMaxWidth(),
                         textAlign = TextAlign.Start
                     )
+                    Button(onClick = {
+                        UsuarioController.cerrarSesion(navController.context)
+                        navController.navigate("login"){
+                            popUpTo("home"){inclusive = true}
+                        }
+                    }){
+                        Text("Cerrar Sesión")
+                    }
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
