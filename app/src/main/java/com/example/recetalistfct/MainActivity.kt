@@ -12,8 +12,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.recetalistfct.session.userSessionManager
 import com.example.recetalistfct.ui.theme.RecetaListFCTTheme
+import com.example.recetalistfct.view.CrearRecetaScreen
 import com.example.recetalistfct.view.HomeScreen
 import com.example.recetalistfct.view.LoginScreen
+import com.example.recetalistfct.view.MisRecetasScreen
 import com.example.recetalistfct.view.PerfilScreen
 import com.example.recetalistfct.view.RegistroScreen
 import com.google.firebase.FirebaseApp
@@ -76,8 +78,18 @@ fun MainScreen(
                 navController = navController
             )
         }
-        composable("PerfilScreen"){
+        composable("perfil"){
             PerfilScreen(
+                navController = navController
+            )
+        }
+        composable("recetas") {
+            MisRecetasScreen(
+                navController = navController
+            )
+        }
+        composable("crearRecetas") {
+            CrearRecetaScreen(
                 navController = navController
             )
         }

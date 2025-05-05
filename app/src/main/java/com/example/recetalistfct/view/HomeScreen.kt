@@ -62,8 +62,8 @@ fun HomeScreen(navController: NavHostController) {
                         "map" -> navController.navigate("map_screen")
                         "carrito" -> navController.navigate("carrito_screen")
                         "home" -> navController.navigate("home_screen")
-                        "recetas" -> navController.navigate("mis_recetas_screen")
-                        "perfil" -> navController.navigate("PerfilScreen")
+                        "recetas" -> navController.navigate("recetas")
+                        "perfil" -> navController.navigate("perfil")
                     }
                 }
             },
