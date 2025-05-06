@@ -5,7 +5,10 @@ import android.net.Uri
 import android.util.Log
 import com.example.recetalistfct.model.Usuario
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 
@@ -117,5 +120,22 @@ object UsuarioController {
             }.addOnFailureListener {
                 onComplete(null)
             }
+    }
+
+    fun obtenerUsuarioPorId(uid: String, onResult: (Usuario?) -> Unit) {
+        val database = FirebaseDatabase.getInstance().reference
+        val usuariosRef = database.child("usuario").child(uid)
+
+        usuariosRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val usuario = snapshot.getValue(Usuario::class.java)
+                onResult(usuario)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("obtenerUsuarioPorId", "Error: ${error.message}")
+                onResult(null)
+            }
+        })
     }
 }

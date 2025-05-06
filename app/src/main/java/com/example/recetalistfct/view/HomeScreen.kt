@@ -1,29 +1,38 @@
 package com.example.recetalistfct.view
 
 import android.util.Log
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.recetalistfct.components.BottomBar
-import com.example.recetalistfct.controller.UsuarioController
+import com.example.recetalistfct.components.FastSettings
+import com.example.recetalistfct.components.RecetaCard
+import com.example.recetalistfct.controller.RecetaController.obtenerTodasLasRecetas
+import com.example.recetalistfct.controller.UsuarioController.obtenerUsuario
+import com.example.recetalistfct.model.Receta
+import com.example.recetalistfct.model.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,9 +41,25 @@ fun HomeScreen(navController: NavHostController) {
     val firebaseUser = FirebaseAuth.getInstance().currentUser
     val userId = firebaseUser?.uid
 
-    if (userId == null){
+    if (userId == null) {
         Log.w("HomeScreen", "Usuario no autenticado.")
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Usuario no autenticado. Por favor, inicie sesión.")
+        }
+        return
     }
+
+    val activity = LocalActivity.current
+    ?: throw IllegalStateException("LoginScreen debe estar alojada en una Activity")
+
+    var usuario by remember { mutableStateOf<Usuario?>(null) }
+    var fotoPerfil by remember { mutableStateOf("") }
+
+    val recetas = remember { mutableStateListOf<Receta>() }
+    val cargando = remember { mutableStateOf(true) }
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isMenuOpen by remember { mutableStateOf(false) }
@@ -45,7 +70,33 @@ fun HomeScreen(navController: NavHostController) {
     val imeVisible = LocalDensity.current.density < 0.5
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route ?: "home"
 
+    val expanded = remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     Log.d("HomeScreen", "Id de usuario $userId")
+
+    LaunchedEffect(userId) {
+        obtenerUsuario(userId) { fetchedUser ->
+            fetchedUser?.let {
+                usuario = it
+                fotoPerfil = it.fotoPerfil
+            }
+        }
+
+        obtenerTodasLasRecetas { todasRecetas ->
+            recetas.clear()
+            recetas.addAll(todasRecetas)
+            cargando.value = false
+        }
+    }
+    FastSettings(
+        expanded = expanded.value,
+        onDismissRequest = { expanded.value = false },
+        navController = navController,
+        context = context,
+        activity = activity
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -61,7 +112,7 @@ fun HomeScreen(navController: NavHostController) {
                     when (selected) {
                         "map" -> navController.navigate("map_screen")
                         "carrito" -> navController.navigate("carrito_screen")
-                        "home" -> navController.navigate("home_screen")
+                        "home" -> navController.navigate("home")
                         "recetas" -> navController.navigate("recetas")
                         "perfil" -> navController.navigate("perfil")
                     }
@@ -94,108 +145,72 @@ fun HomeScreen(navController: NavHostController) {
                         }
                     },
                     actions = {
-                        IconButton(onClick = { isMenuOpen = !isMenuOpen }) {
-                            Icon(Icons.Filled.Settings, contentDescription = "Configuración")
+                        Box {
+                            IconButton(onClick = { isMenuOpen = true }) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(fotoPerfil)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Foto de perfil",
+                                    modifier = Modifier
+                                        .size(250.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            FastSettings(
+                                expanded = isMenuOpen,
+                                onDismissRequest = { isMenuOpen = false},
+                                navController = navController,
+                                context = context,
+                                activity = activity
+                                )
                         }
-                    },
+                    }
                 )
             },
-            floatingActionButton = {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .align(Alignment.BottomEnd)
-                ) {
-                    // Botón de Eventos Gastronómicos
-                    FloatingActionButton(
-                        onClick = {
-                            navController.navigate("events") // Navegar a la pantalla de eventos
-                        },
-                        modifier = Modifier
-                            .padding(bottom = 8.dp)
-                    ) {
-                        Icon(Icons.Default.Place, contentDescription = "Eventos Gastronómicos")
-                    }
-
-                    // Botón de Mis Recetas
-                    FloatingActionButton(
-                        onClick = { navController.navigate("mis_recetas/$userId") },
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Mis Recetas")
-                    }
-                }
-            },
             content = { padding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(bottom = if (imeVisible) 250.dp else 0.dp)  // Ajuste para cuando el teclado está visible
-                ) {
-                    Text(
-                        text = "Lista de Recetas",
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 16.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Start
-                    )
-                    Button(onClick = {
-                        UsuarioController.cerrarSesion(navController.context)
-                        navController.navigate("login"){
-                            popUpTo("home"){inclusive = true}
-                        }
-                    }){
-                        Text("Cerrar Sesión")
-                    }
-                    LazyColumn(
+                if (cargando.value) {
+                    Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 8.dp)
+                            .padding(padding),
+                        contentAlignment = Alignment.Center
                     ) {
-                        /*
-                        if (searchQuery.isEmpty()) { // Si no escribimos nada en la busqueda muestra esta:
-                            items(recetas) {receta ->
-                                RecipeCard(
-                                    receta = receta,
-                                    onClick = {
-                                        navController.navigate("recipe_edit/${receta.id}")
-                                    }
-                                )
-                            }
-                        } else if (filteredRecetas.isNotEmpty()) { //Si escribimos algo en la busqueda muestra esta:
-                            items(filteredRecetas) { receta ->
-                                RecipeCard(
-                                    receta = receta,
-                                    onClick = {
-                                        navController.navigate("recipe_edit/${receta.id}")
-                                    }
-                                )
-                            }
-                        } else {
-                            item {
-                                Text(
-                                    text = "No se encontraron recetas con ese nombre.",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }*/
+                        CircularProgressIndicator()
                     }
-
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            .padding(bottom = if (imeVisible) 250.dp else 0.dp)
+                    ) {
+                        Text(
+                            text = "Lista de Recetas",
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 16.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Start
+                        )
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            items(recetas) { receta ->
+                                RecetaCard(
+                                    receta = receta,
+                                    onClick = {
+                                        navController.navigate("detalle/${receta.id}")
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         )
-        /*
-        PreferencesSettingsMenu(
-            isMenuOpen = isMenuOpen,
-            onCloseMenu = { isMenuOpen = false },
-            darkModeEnabled = darkModeEnabled,
-            onDarkModeToggle = onDarkModeToggle,
-            navController = navController
-        )
-         */
     }
 }

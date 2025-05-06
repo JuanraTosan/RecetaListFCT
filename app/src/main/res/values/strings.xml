@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">RecetaListFCT</string>
+    <string name="logout">Cerrar Sesión</string>
+    <string name="change_language">Cambiar idioma</string>
+    <string name="map">Mapa</string>
+    <string name="cart">Carrito</string>
+    <string name="home">Inicio</string>
+    <string name="my_recipes">Mis recetas</string>
+    <string name="profile">Perfil</string>
 </resources>

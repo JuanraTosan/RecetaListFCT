@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.ui.res.stringResource
+import com.example.recetalistfct.R
 
 @Composable
 fun BottomBar(
@@ -21,32 +23,32 @@ fun BottomBar(
         NavigationBarItem(
             selected = selectedItem == "map",
             onClick = { onItemSelected("map") },
-            icon = { Icon(Icons.Filled.Place, contentDescription = "Mapa") },
-            label = { Text("Mapa") }
+            icon = { Icon(Icons.Filled.Place, contentDescription = stringResource(R.string.map)) },
+            label = { Text(stringResource(R.string.map)) }
         )
         NavigationBarItem(
             selected = selectedItem == "carrito",
             onClick = { onItemSelected("carrito") },
-            icon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Lista de Compra") },
-            label = { Text("Carrito") }
+            icon = { Icon(Icons.Filled.ShoppingCart, contentDescription = stringResource(R.string.cart)) },
+            label = { Text(stringResource(R.string.cart)) }
         )
         NavigationBarItem(
             selected = selectedItem == "home",
             onClick = { onItemSelected("home") },
-            icon = { Icon(Icons.Filled.Home, contentDescription = "Inicio") },
-            label = { Text("Inicio") }
+            icon = { Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.home)) },
+            label = { Text(stringResource(R.string.home)) }
         )
         NavigationBarItem(
             selected = selectedItem == "recetas",
             onClick = { onItemSelected("recetas") },
-            icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Mis Recetas") },
-            label = { Text("Mis recetas") }
+            icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.my_recipes)) },
+            label = { Text(stringResource(R.string.my_recipes)) }
         )
         NavigationBarItem(
             selected = selectedItem == "perfil",
             onClick = { onItemSelected("perfil") },
-            icon = { Icon(Icons.Filled.Person, contentDescription = "Perfil") },
-            label = { Text("Perfil") }
+            icon = { Icon(Icons.Filled.Person, contentDescription = stringResource(R.string.profile)) },
+            label = { Text(stringResource(R.string.profile)) }
         )
     }
 }

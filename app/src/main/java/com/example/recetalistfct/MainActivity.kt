@@ -29,22 +29,7 @@ class MainActivity : ComponentActivity() {
         } else {
             Log.e("Firebase", "Firebase NO está inicializado.")
         }
-        /*
-        // 🔸 Prueba de conexión con Firestore
-        val db = FirebaseFirestore.getInstance()
-        val receta = hashMapOf(
-            "nombre" to "Tortilla",
-            "ingredientes" to "Huevos y papas"
-        )
-        db.collection("recetas")
-            .add(receta)
-            .addOnSuccessListener { documentReference ->
-                println("Documento añadido con ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                println("Error al añadir documento: $e")
-            }
-         */
+
         enableEdgeToEdge()
 
         setContent {

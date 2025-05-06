@@ -1,6 +1,7 @@
 package com.example.recetalistfct.controller
 
 import android.net.Uri
+import android.util.Log
 import com.example.recetalistfct.model.Receta
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -62,5 +63,25 @@ object RecetaController {
         ref.removeValue()
             .addOnSuccessListener { onResult(true) }
             .addOnFailureListener { onResult(false) }
+    }
+
+    fun obtenerTodasLasRecetas(onResult: (List<Receta>) -> Unit) {
+        val dbRef = FirebaseDatabase.getInstance().getReference("receta")
+        dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val recetas = mutableListOf<Receta>()
+                for (recetaSnapshot in snapshot.children) {
+                    val receta = recetaSnapshot.getValue(Receta::class.java)
+                    receta?.let {
+                        recetas.add(it.copy(id = recetaSnapshot.key ?: ""))
+                    }
+                }
+                onResult(recetas)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onResult(emptyList())
+            }
+        })
     }
 }
