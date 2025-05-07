@@ -6,15 +6,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.recetalistfct.session.userSessionManager
 import com.example.recetalistfct.ui.theme.RecetaListFCTTheme
+import com.example.recetalistfct.utils.changeLanguage
+import com.example.recetalistfct.utils.getSavedLanguage
+import com.example.recetalistfct.utils.getSavedThemePreference
+import com.example.recetalistfct.view.CarritoScreen
 import com.example.recetalistfct.view.CrearRecetaScreen
+import com.example.recetalistfct.view.DetalleRecetaScreen
 import com.example.recetalistfct.view.HomeScreen
 import com.example.recetalistfct.view.LoginScreen
+import com.example.recetalistfct.view.MapScreen
 import com.example.recetalistfct.view.MisRecetasScreen
 import com.example.recetalistfct.view.PerfilScreen
 import com.example.recetalistfct.view.RegistroScreen
@@ -30,10 +38,20 @@ class MainActivity : ComponentActivity() {
             Log.e("Firebase", "Firebase NO está inicializado.")
         }
 
+        //Guardar el idioma seleccionado
+        val savedLang = getSavedLanguage(this)
+        changeLanguage(this, savedLang)
+
+        //Aqui se recupera el modo oscuro
+        val savedDarkMode = getSavedThemePreference(this)
+
+        userSessionManager.init(this)
+
         enableEdgeToEdge()
 
         setContent {
-            RecetaListFCTTheme {
+            val darkThemeState = remember { mutableStateOf(savedDarkMode) }
+            RecetaListFCTTheme(useDarkTheme = darkThemeState.value) {
                 val navController = rememberNavController()
 
                 MainScreen(navController = navController)
@@ -46,8 +64,9 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(
     navController: NavHostController
 ){
-    val userId = userSessionManager.currentUserId
-    NavHost(navController = navController, startDestination = "login"){
+    val startDestination = if (userSessionManager.isUserLoggedIn()) "home" else "login"
+
+    NavHost(navController = navController, startDestination = startDestination){
         composable("login") {
             LoginScreen(
                 navController = navController
@@ -75,6 +94,21 @@ fun MainScreen(
         }
         composable("crearRecetas") {
             CrearRecetaScreen(
+                navController = navController
+            )
+        }
+        composable("map") {
+            MapScreen(
+                navController = navController
+            )
+        }
+        composable("carrito") {
+            CarritoScreen(
+                navController = navController
+            )
+        }
+        composable("detalleRecetas") {
+            DetalleRecetaScreen(
                 navController = navController
             )
         }

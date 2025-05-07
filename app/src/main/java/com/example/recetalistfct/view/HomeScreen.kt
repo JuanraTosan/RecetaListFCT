@@ -85,7 +85,7 @@ fun HomeScreen(navController: NavHostController) {
 
         obtenerTodasLasRecetas { todasRecetas ->
             recetas.clear()
-            recetas.addAll(todasRecetas)
+            recetas.addAll(todasRecetas.sortedByDescending { it.fechaCreacion })
             cargando.value = false
         }
     }
@@ -110,8 +110,8 @@ fun HomeScreen(navController: NavHostController) {
             bottomBar = {
                 BottomBar(selectedItem = currentDestination) { selected ->
                     when (selected) {
-                        "map" -> navController.navigate("map_screen")
-                        "carrito" -> navController.navigate("carrito_screen")
+                        "map" -> navController.navigate("map")
+                        "carrito" -> navController.navigate("carrito")
                         "home" -> navController.navigate("home")
                         "recetas" -> navController.navigate("recetas")
                         "perfil" -> navController.navigate("perfil")
@@ -203,8 +203,8 @@ fun HomeScreen(navController: NavHostController) {
                                 RecetaCard(
                                     receta = receta,
                                     onClick = {
-                                        navController.navigate("detalle/${receta.id}")
-                                    }
+                                        navController.navigate("detalleRecetas")
+                                    }                                   ///${receta.id}
                                 )
                             }
                         }

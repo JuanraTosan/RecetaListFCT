@@ -37,7 +37,7 @@ fun MisRecetasScreen(navController: NavController) {
     val offsetMap = remember { mutableStateMapOf<String, Float>() }
 
     obtenerRecetasDeUsuario(uid) { recetasCargadas ->
-            recetas = recetasCargadas
+            recetas = recetasCargadas.sortedByDescending { it.fechaCreacion }
         }
 
     Scaffold(
@@ -102,6 +102,13 @@ fun MisRecetasScreen(navController: NavController) {
                                         contentDescription = receta.nombre,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
+                                    )
+
+                                    val alpha = ((-(offsetMap[receta.id] ?: 0f)) / 300f).coerceIn(0f, 1f)
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Red.copy(alpha = alpha))
                                     )
                                     Box(
                                         modifier = Modifier

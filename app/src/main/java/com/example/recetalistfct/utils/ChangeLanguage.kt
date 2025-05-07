@@ -14,3 +14,14 @@ fun changeLanguage(context: Context, languageCode: String) {
 
     context.resources.updateConfiguration(config, context.resources.displayMetrics)
 }
+
+fun saveLanguagePreference(context: Context, languageCode: String) {
+    val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+    prefs.edit().putString("language", languageCode).apply()
+}
+
+fun getSavedLanguage(context: Context): String {
+    val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+    return prefs.getString("language", "es") ?: "es"
+}
+

@@ -12,11 +12,13 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 
+
 object UsuarioController {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db =FirebaseDatabase.getInstance().reference.child("usuario")
     private val storage = FirebaseStorage.getInstance()
+
 
 
     fun registrarUsuario(
@@ -76,12 +78,6 @@ object UsuarioController {
             .addOnFailureListener{
                 onError("Error de login: ${it.localizedMessage}")
             }
-    }
-
-    fun cerrarSesion(context: Context){
-        auth.signOut()
-        context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-            .edit().remove("usuarioId").apply()
     }
 
     fun obtenerUsuario(uid: String, onComplete: (Usuario?) -> Unit){

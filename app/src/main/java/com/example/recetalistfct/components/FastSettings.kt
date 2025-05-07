@@ -13,10 +13,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.example.recetalistfct.controller.UsuarioController
 import com.example.recetalistfct.R
 import androidx.compose.ui.res.stringResource
+import com.example.recetalistfct.ui.theme.LocalDarkTheme
 import com.example.recetalistfct.utils.changeLanguage
+import com.example.recetalistfct.utils.saveLanguagePreference
+import com.example.recetalistfct.utils.saveThemePreference
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import com.example.recetalistfct.session.userSessionManager
+
 
 @Composable
 fun FastSettings(
@@ -31,6 +37,7 @@ fun FastSettings(
     val languageNames = listOf("Español", "Inglés", "Francés") // Nombres de idiomas
 
     var showLanguageMenu by remember { mutableStateOf(false) }
+    val darkThemeState = LocalDarkTheme.current
 
 
     Box(modifier = modifier) {
@@ -41,11 +48,32 @@ fun FastSettings(
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.logout)) },
                 onClick = {
-                    UsuarioController.cerrarSesion(navController.context)
+                    userSessionManager.clearSession()
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
                     onDismissRequest()
+                }
+            )
+
+            DropdownMenuItem(
+                text = {
+                    Text(if (darkThemeState.value) "Tema claro" else "Tema oscuro")
+                },
+                trailingIcon = {
+                    Switch(
+                        checked = darkThemeState.value,
+                        onCheckedChange = {
+                            darkThemeState.value = it
+                            saveThemePreference(context, it)
+                        },
+                        colors = SwitchDefaults.colors()
+                    )
+                },
+                onClick = {
+                    val newValue = !darkThemeState.value
+                    darkThemeState.value = newValue
+                    saveThemePreference(context, newValue)
                 }
             )
 
@@ -64,6 +92,7 @@ fun FastSettings(
                         text = { Text(languageNames[index]) },
                         onClick = {
                             changeLanguage(context, langCode)
+                            saveLanguagePreference(context, langCode)
                             showLanguageMenu = false
                             onDismissRequest()
                             activity.recreate()

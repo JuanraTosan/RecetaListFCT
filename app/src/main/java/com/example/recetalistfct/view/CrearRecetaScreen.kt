@@ -202,7 +202,8 @@ fun CrearRecetaScreen(navController: NavController) {
                                     descripcion = descripcion,
                                     fotoReceta = fotoUrl,
                                     usuarioId = uid,
-                                    ingredientes = ingredientes.toList()
+                                    ingredientes = ingredientes.toList(),
+                                    fechaCreacion = System.currentTimeMillis()
                                 )
                                 RecetaController.guardarReceta(receta) { success ->
                                     isUploading = false

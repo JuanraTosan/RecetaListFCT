@@ -1,7 +1,6 @@
 package com.example.recetalistfct.controller
 
 import android.net.Uri
-import android.util.Log
 import com.example.recetalistfct.model.Receta
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
