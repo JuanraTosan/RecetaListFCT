@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.recetalistfct.R
 import com.example.recetalistfct.controller.UsuarioController
-import com.example.recetalistfct.session.userSessionManager
+import com.example.recetalistfct.session.UserSessionManager
 
 @Composable
 fun LoginScreen(
@@ -92,7 +92,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Nombre o Correo Electrónico") },
+                label = { Text("Correo Electrónico") },
                 modifier = Modifier
                     .fillMaxWidth(),
                 singleLine = true,
@@ -143,7 +143,7 @@ fun LoginScreen(
                             password = password,
                             context = context,
                             onSuccess = {usuario ->
-                                userSessionManager.updateUser(usuario.uid)
+                                UserSessionManager.updateUser(usuario.uid)
                                 navController.navigate("home"){
                                     popUpTo("login"){inclusive = true}
                                 }

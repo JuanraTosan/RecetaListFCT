@@ -41,19 +41,8 @@ fun HomeScreen(navController: NavHostController) {
     val firebaseUser = FirebaseAuth.getInstance().currentUser
     val userId = firebaseUser?.uid
 
-    if (userId == null) {
-        Log.w("HomeScreen", "Usuario no autenticado.")
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Usuario no autenticado. Por favor, inicie sesión.")
-        }
-        return
-    }
-
     val activity = LocalActivity.current
-    ?: throw IllegalStateException("LoginScreen debe estar alojada en una Activity")
+    ?: throw IllegalStateException("LoginScreen debe estar alojada en una Activity")
 
     var usuario by remember { mutableStateOf<Usuario?>(null) }
     var fotoPerfil by remember { mutableStateOf("") }
@@ -72,6 +61,17 @@ fun HomeScreen(navController: NavHostController) {
 
     val expanded = remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    if (userId == null) {
+        Log.w("HomeScreen", "Usuario no autenticado.")
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Usuario no autenticado. Por favor, inicie sesión.")
+        }
+        return
+    }
 
     Log.d("HomeScreen", "Id de usuario $userId")
 

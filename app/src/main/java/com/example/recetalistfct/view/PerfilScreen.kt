@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.recetalistfct.components.BottomBar
+import com.example.recetalistfct.components.FechaNacimientoField
+import com.example.recetalistfct.components.GeneroDropdownField
 import com.example.recetalistfct.controller.UsuarioController.actualizarPerfil
 import com.example.recetalistfct.controller.UsuarioController.obtenerUsuario
 import com.example.recetalistfct.controller.UsuarioController.subirFotoPerfil
@@ -71,6 +73,7 @@ fun PerfilScreen(navController: NavController) {
             BottomBar(selectedItem = "perfil") { navController.navigate(it) }
         }
     ) { padding ->
+
         Column(modifier = Modifier.padding(padding).padding(16.dp)) {
             Text("Configuración de Perfil", style = MaterialTheme.typography.headlineMedium)
 
@@ -111,14 +114,15 @@ fun PerfilScreen(navController: NavController) {
                 value = username,
                 onValueChange = { username = it },
                 label = { Text("Nombre de usuario") })
-            OutlinedTextField(
-                value = fechaNacimiento,
-                onValueChange = { fechaNacimiento = it },
-                label = { Text("Fecha de nacimiento") })
-            OutlinedTextField(
-                value = genero,
-                onValueChange = { genero = it },
-                label = { Text("Género") })
+
+            FechaNacimientoField(fechaNacimiento){
+                fechaNacimiento = it
+            }
+
+            GeneroDropdownField(genero) {
+                genero = it
+            }
+
             OutlinedTextField(
                 value = telefono,
                 onValueChange = { telefono = it },

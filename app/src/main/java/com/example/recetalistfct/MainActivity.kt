@@ -12,7 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.recetalistfct.session.userSessionManager
+import com.example.recetalistfct.session.UserSessionManager
 import com.example.recetalistfct.ui.theme.RecetaListFCTTheme
 import com.example.recetalistfct.utils.changeLanguage
 import com.example.recetalistfct.utils.getSavedLanguage
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
         //Aqui se recupera el modo oscuro
         val savedDarkMode = getSavedThemePreference(this)
 
-        userSessionManager.init(this)
+        UserSessionManager.init(this)
 
         enableEdgeToEdge()
 
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(
     navController: NavHostController
 ){
-    val startDestination = if (userSessionManager.isUserLoggedIn()) "home" else "login"
+    val startDestination = if (UserSessionManager.isUserLoggedIn()) "home" else "login"
 
     NavHost(navController = navController, startDestination = startDestination){
         composable("login") {

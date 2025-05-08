@@ -21,7 +21,7 @@ import com.example.recetalistfct.utils.saveLanguagePreference
 import com.example.recetalistfct.utils.saveThemePreference
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import com.example.recetalistfct.session.userSessionManager
+import com.example.recetalistfct.session.UserSessionManager
 
 
 @Composable
@@ -48,7 +48,7 @@ fun FastSettings(
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.logout)) },
                 onClick = {
-                    userSessionManager.clearSession()
+                    UserSessionManager.clearSession()
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }

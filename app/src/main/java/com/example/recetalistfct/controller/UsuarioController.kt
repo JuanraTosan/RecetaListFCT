@@ -12,14 +12,11 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 
-
 object UsuarioController {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db =FirebaseDatabase.getInstance().reference.child("usuario")
     private val storage = FirebaseStorage.getInstance()
-
-
 
     fun registrarUsuario(
         username: String,

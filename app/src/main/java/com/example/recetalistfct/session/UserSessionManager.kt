@@ -3,7 +3,7 @@ package com.example.recetalistfct.session
 import android.content.Context
 import android.content.SharedPreferences
 
-object userSessionManager{
+object UserSessionManager{
     private const val PREF_NAME = "user_session"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
