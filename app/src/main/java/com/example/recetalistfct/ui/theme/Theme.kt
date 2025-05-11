@@ -17,16 +17,24 @@ import androidx.compose.runtime.staticCompositionLocalOf
 val LocalDarkTheme = staticCompositionLocalOf { mutableStateOf(false) }
 
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val LightColors = lightColorScheme(
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    tertiary = LightTertiary,
+    background = LightBackground,
+    surface = LightSurface
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+private val DarkColors = darkColorScheme(
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    secondary = DarkSecondary,
+    onSecondary = DarkOnSecondary,
+    tertiary = DarkTertiary,
+    background = DarkBackground,
+    surface = DarkSurface
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -74,7 +82,7 @@ fun RecetaListFCTTheme(
 
     CompositionLocalProvider(LocalDarkTheme provides darkThemeState) {
         MaterialTheme(
-            colorScheme = if (darkThemeState.value) darkColorScheme() else lightColorScheme(),
+            colorScheme = if (darkThemeState.value) DarkColors else LightColors,
             typography = Typography,
             content = content
         )

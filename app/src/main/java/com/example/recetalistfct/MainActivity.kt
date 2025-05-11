@@ -18,7 +18,7 @@ import com.example.recetalistfct.utils.changeLanguage
 import com.example.recetalistfct.utils.getSavedLanguage
 import com.example.recetalistfct.utils.getSavedThemePreference
 import com.example.recetalistfct.view.CarritoScreen
-import com.example.recetalistfct.view.CrearRecetaScreen
+import com.example.recetalistfct.view.CrearEditarRecetaScreen
 import com.example.recetalistfct.view.DetalleRecetaScreen
 import com.example.recetalistfct.view.HomeScreen
 import com.example.recetalistfct.view.LoginScreen
@@ -26,6 +26,7 @@ import com.example.recetalistfct.view.MapScreen
 import com.example.recetalistfct.view.MisRecetasScreen
 import com.example.recetalistfct.view.PerfilScreen
 import com.example.recetalistfct.view.RegistroScreen
+//import com.google.android.libraries.places.api.Places
 import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
@@ -46,6 +47,13 @@ class MainActivity : ComponentActivity() {
         val savedDarkMode = getSavedThemePreference(this)
 
         UserSessionManager.init(this)
+
+/*
+        if (!Places.isInitialized()) {
+            Places.initialize(applicationContext, "AIzaSyC89hxw56weyKc77KPDYU_05L0LBr_cy5w")
+        }
+*/
+
 
         enableEdgeToEdge()
 
@@ -92,10 +100,15 @@ fun MainScreen(
                 navController = navController
             )
         }
-        composable("crearRecetas") {
-            CrearRecetaScreen(
-                navController = navController
+        composable("crearRecetas/{recetaId}") { backStackEntry ->
+            val recetaId = backStackEntry.arguments!!.getString("recetaId")!!
+            CrearEditarRecetaScreen(
+                navController = navController,
+                recetaId = recetaId
             )
+        }
+        composable(route = "crearRecetas") {
+            CrearEditarRecetaScreen(navController = navController)
         }
         composable("map") {
             MapScreen(
@@ -107,9 +120,11 @@ fun MainScreen(
                 navController = navController
             )
         }
-        composable("detalleRecetas") {
+        composable("detalleRecetas/{recetaId}") { backStackEntry ->
+            val recetaId = backStackEntry.arguments!!.getString("recetaId")!!
             DetalleRecetaScreen(
-                navController = navController
+                navController = navController,
+                recetaId = recetaId
             )
         }
     }

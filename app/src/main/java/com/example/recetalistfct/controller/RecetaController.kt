@@ -1,9 +1,11 @@
 package com.example.recetalistfct.controller
 
 import android.net.Uri
+import android.util.Log
 import com.example.recetalistfct.model.Receta
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
@@ -27,6 +29,44 @@ object RecetaController {
             }.addOnFailureListener {
                 onComplete(null)
             }
+    }
+
+    fun subirMultiplesImagenesReceta(
+        uris: List<Uri>,
+        uid: String,
+        onComplete: (List<String>) -> Unit
+    ) {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val urls = mutableListOf<String>()
+        var uploadedCount = 0
+
+        if (uris.isEmpty()) {
+            onComplete(emptyList())
+            return
+        }
+
+        uris.forEach { uri ->
+            val fileName = "galeria-recetas/$uid-${UUID.randomUUID()}.jpg"
+            val imageRef = storageRef.child(fileName)
+
+            imageRef.putFile(uri).continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    task.exception?.let { throw it }
+                }
+                imageRef.downloadUrl
+            }.addOnSuccessListener { downloadUri ->
+                urls.add(downloadUri.toString())
+                uploadedCount++
+                if (uploadedCount == uris.size) {
+                    onComplete(urls)
+                }
+            }.addOnFailureListener {
+                uploadedCount++
+                if (uploadedCount == uris.size) {
+                    onComplete(urls) // Devuelve las que sí se subieron
+                }
+            }
+        }
     }
 
     fun guardarReceta(receta: Receta, onComplete: (Boolean) -> Unit) {
@@ -56,6 +96,25 @@ object RecetaController {
                 }
             })
     }
+
+    fun obtenerRecetaPorId(recetaId: String, onResult: (Receta?) -> Unit) {
+        val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+        val recetaRef = database.child("receta").child(recetaId)
+
+        recetaRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val receta = snapshot.getValue(Receta::class.java)
+                onResult(receta)
+            } else {
+                onResult(null)
+            }
+        }.addOnFailureListener { exception ->
+            onResult(null)
+            Log.e("Firebase", "Error al obtener receta: ${exception.message}")
+        }
+    }
+
+
 
     fun eliminarReceta(idReceta: String, onResult: (Boolean) -> Unit) {
         val ref = FirebaseDatabase.getInstance().getReference("receta/$idReceta")

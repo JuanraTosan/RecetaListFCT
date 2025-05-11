@@ -94,7 +94,8 @@ fun MisRecetasScreen(navController: NavController) {
                                     .fillMaxWidth()
                                     .height(200.dp),
                                 shape = RoundedCornerShape(16.dp),
-                                elevation = CardDefaults.cardElevation(8.dp)
+                                elevation = CardDefaults.cardElevation(8.dp),
+                                onClick = { navController.navigate("crearRecetas/${receta.id}") }
                             ) {
                                 Box {
                                     Image(

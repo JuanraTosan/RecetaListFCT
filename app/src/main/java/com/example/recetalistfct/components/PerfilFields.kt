@@ -2,6 +2,7 @@ package com.example.recetalistfct.components
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
@@ -44,7 +45,7 @@ fun FechaNacimientoField(fechaNacimiento: String, onFechaSeleccionada: (String) 
         onValueChange = {},
         label = { Text("Fecha de nacimiento") },
         readOnly = true,
-        modifier = Modifier,
+        modifier = Modifier.fillMaxWidth(0.8f),
         trailingIcon = {
             Icon(
                 imageVector = Icons.Default.CalendarToday,
@@ -82,11 +83,14 @@ fun GeneroDropdownField(
             modifier = Modifier
                 .menuAnchor()
                 .clickable { expanded = true }
+                .fillMaxWidth(0.8f)
+
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth(0.8f)
         ) {
             opciones.forEach { opcion ->
                 DropdownMenuItem(
@@ -100,3 +104,5 @@ fun GeneroDropdownField(
         }
     }
 }
+
+

@@ -69,6 +69,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.material.icons.extended)
 
     // Firebase BOM: gestiona versiones automáticamente
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
@@ -91,6 +92,11 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
 
-    implementation(libs.androidx.material.icons.extended)
+    implementation("com.google.maps.android:maps-compose:4.4.1")
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
+
+    implementation("androidx.compose.foundation:foundation:1.5.0")
+
+
 
 }

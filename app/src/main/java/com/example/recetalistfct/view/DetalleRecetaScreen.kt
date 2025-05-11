@@ -1,16 +1,14 @@
 package com.example.recetalistfct.view
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,78 +17,196 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.request.ImageRequest
-import com.example.recetalistfct.R
-import kotlinx.coroutines.delay
-import kotlin.math.sin
+import coil.compose.rememberAsyncImagePainter
+import com.example.recetalistfct.components.CarruselDeFotos
+import com.example.recetalistfct.controller.IngredienteController
+import com.example.recetalistfct.controller.RecetaController.obtenerRecetaPorId
+import com.example.recetalistfct.model.Ingrediente
+import com.example.recetalistfct.model.Receta
+import com.google.firebase.auth.FirebaseAuth
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetalleRecetaScreen(navController: NavController) {
-    var visible by remember { mutableStateOf(false) }
-    var vibrationOffset by remember { mutableStateOf(0f) }
+fun DetalleRecetaScreen(
+    navController: NavController,
+    recetaId: String
+) {
+    var receta by remember { mutableStateOf<Receta?>(null) }
+    var ingredientes by remember { mutableStateOf<List<Ingrediente>>(emptyList()) }
+    var isLoadingIngredients by remember { mutableStateOf(false) }
 
-    // Animación de aparición
-    LaunchedEffect(Unit) {
-        delay(300)
-        visible = true
-    }
+    // Obtener usuario actual
+    val firebaseUser = FirebaseAuth.getInstance().currentUser
+    val currentUserId = firebaseUser?.uid
 
-    // Vibración horizontal ligera
-    LaunchedEffect(Unit) {
-        var time = 0f
-        while (true) {
-            vibrationOffset = (sin(time) * 5).toFloat()
-            time += 0.02f
-            delay(16)
+    // Cargar receta y sus ingredientes
+    LaunchedEffect(recetaId) {
+        isLoadingIngredients = true
+        obtenerRecetaPorId(recetaId) { recetaData ->
+            receta = recetaData
+            // Obtener los ingredientes asociados a esta receta
+            IngredienteController.obtenerIngredientesPorReceta(recetaId) { ingredientesList ->
+                ingredientes = ingredientesList
+                isLoadingIngredients = false
+            }
+
+
         }
+
+
     }
 
-    Box(modifier = Modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ){}
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            AnimatedVisibility(
-                visible = visible,
-                enter = fadeIn()
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    // Mostrar GIF
-                    AsyncImage(
-                        model = ImageRequest.Builder(context = LocalContext.current)
-                            .data(R.drawable.nuggetspinning)
-                            .decoderFactory(GifDecoder.Factory())
-                            .build(),
-                        contentDescription = "GIF Nugget",
-                        modifier = Modifier.size(200.dp)
-                    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Detalles de la Receta") },
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        content = { paddingValues ->
 
-                    // Texto con vibración
-                    Text(
-                        text = "ESTAMOS TRABAJANDO \n EN ELLO...",
-                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 25.sp),
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.offset(x = vibrationOffset.dp)
-                    )
+
+            if (receta == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                val recetaData = receta!!
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+
+                    // Imagen principal
+                    item {
+                        val fotoPrincipal = recetaData.fotoReceta
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = if (fotoPrincipal.isNotBlank()) fotoPrincipal else "https://via.placeholder.com/600x400.png?text=Sin+Imagen "
+                            ),
+                            contentDescription = "Imagen principal",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                                .padding(bottom = 16.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    // Mostrar botón de editar solo si el usuario es el propietario
+                    if (currentUserId == recetaData.usuarioId) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        navController.navigate("crearRecetas/${recetaData.id}")
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Editar receta",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Nombre
+                    item {
+                        Text(
+                            text = recetaData.nombre,
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+                    }
+
+                    // Descripción
+                    item {
+                        Text(
+                            text = recetaData.descripcion,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+
+                    // Título Ingredientes
+                    item {
+                        Text(
+                            text = "Ingredientes",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, top = 16.dp)
+                        )
+                    }
+
+                    // Estado de carga / lista de ingredientes
+                    if (isLoadingIngredients) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                            }
+                        }
+                    } else if (ingredientes.isNotEmpty()) {
+                        items(ingredientes) { ingrediente ->
+                            Text(
+                                text = "${ingrediente.nombre} - ${ingrediente.cantidad}",
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                            )
+                        }
+                    } else {
+                        item {
+                            Text(
+                                text = "No hay ingredientes disponibles para esta receta.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, top = 8.dp)
+                            )
+                        }
+                    }
+
+                    // Galería de Fotos
+                    item {
+                        Text(
+                            text = "Galería de Fotos",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, top = 16.dp)
+                        )
+                        CarruselDeFotos(recetaData.fotosGaleriaReceta)
+                    }
                 }
             }
         }
-    }
+    )
 }

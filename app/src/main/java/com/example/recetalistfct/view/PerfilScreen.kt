@@ -9,12 +9,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,12 +42,15 @@ fun PerfilScreen(navController: NavController) {
 
     var usuario by remember { mutableStateOf<Usuario?>(null) }
 
-    var username by remember { mutableStateOf("") }
-    var fechaNacimiento by remember { mutableStateOf("") }
-    var genero by remember { mutableStateOf("") }
-    var telefono by remember { mutableStateOf("") }
-    var imagenUri by remember { mutableStateOf<Uri?>(null) }
-    var fotoPerfil by remember { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
+    var fechaNacimiento by rememberSaveable { mutableStateOf("") }
+    var genero by rememberSaveable { mutableStateOf("") }
+    var telefono by rememberSaveable { mutableStateOf("") }
+    var imagenUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var fotoPerfil by rememberSaveable { mutableStateOf("") }
+
+    val usuarioCargado = rememberSaveable { mutableStateOf(false) }
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -56,14 +61,17 @@ fun PerfilScreen(navController: NavController) {
 
     // Cargar datos del usuario al iniciar
     LaunchedEffect(uid) {
-        obtenerUsuario(uid) { fetchedUser ->
-            fetchedUser?.let {
-                usuario = it
-                username = it.username
-                telefono = it.telefono
-                fechaNacimiento = it.fechaNacimiento
-                genero = it.genero
-                fotoPerfil = it.fotoPerfil
+        if (!usuarioCargado.value) {
+            obtenerUsuario(uid) { fetchedUser ->
+                fetchedUser?.let {
+                    usuario = it
+                    username = it.username
+                    telefono = it.telefono
+                    fechaNacimiento = it.fechaNacimiento
+                    genero = it.genero
+                    fotoPerfil = it.fotoPerfil
+                    usuarioCargado.value = true
+                }
             }
         }
     }
@@ -74,94 +82,161 @@ fun PerfilScreen(navController: NavController) {
         }
     ) { padding ->
 
-        Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-            Text("Configuración de Perfil", style = MaterialTheme.typography.headlineMedium)
+        LazyColumn(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
 
-            Spacer(Modifier.height(16.dp))
-
-            Box(modifier = Modifier.size(120.dp)) {
-                val imageModifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .clickable { launcher.launch("image/*") }
-                    .background(Color.Gray)
-
-                if (imagenUri != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(imagenUri),
-                        contentDescription = "Nueva Foto de perfil",
-                        modifier = imageModifier
-                    )
-                }else if (fotoPerfil.isNotBlank()){
-                    Image(
-                        painter = rememberAsyncImagePainter(fotoPerfil),
-                        contentDescription = "Foto actual de perfil",
-                        modifier = imageModifier
-                    )
-                } else {
-                    Icon(Icons.Default.Person, contentDescription = null, modifier = imageModifier)
-                }
-
-                IconButton(
-                    onClick = { launcher.launch("image/*") },
-                    modifier = Modifier.align(Alignment.BottomEnd)
+            //SECCION ENCABEZADO (TITULO Y FOTO DE PERFIL)
+            item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f))
+                    .padding(vertical = 24.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Cambiar foto")
-                }
-            }
 
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Nombre de usuario") })
+                    Text(
+                        text = "Configuración de Perfil",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
 
-            FechaNacimientoField(fechaNacimiento){
-                fechaNacimiento = it
-            }
+                    Spacer(modifier = Modifier.height(12.dp))
 
-            GeneroDropdownField(genero) {
-                genero = it
-            }
+                    // Contenedor para la foto de perfil
+                    Box {
+                        val imageModifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .clickable { launcher.launch("image/*") }
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
 
-            OutlinedTextField(
-                value = telefono,
-                onValueChange = { telefono = it },
-                label = { Text("Teléfono") })
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    val actualizarUsuario: (String) -> Unit = { urlFinal ->
-                        val nuevoUsuario = Usuario(
-                            uid = uid,
-                            email = usuario?.email ?: "",
-                            username = username,
-                            telefono = telefono,
-                            fechaNacimiento = fechaNacimiento,
-                            genero = genero,
-                            fotoPerfil = urlFinal
-                        )
-                        actualizarPerfil(nuevoUsuario)
-                        Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
-                    }
-                if (imagenUri != null) {
-                    subirFotoPerfil(imagenUri!!, uid) { urlSubida ->
-                        if (urlSubida != null) {
-                            actualizarUsuario(urlSubida)
-                            fotoPerfil = urlSubida
+                        if (imagenUri != null) {
+                            Image(
+                                painter = rememberAsyncImagePainter(imagenUri),
+                                contentDescription = "Nueva Foto de perfil",
+                                modifier = imageModifier
+                            )
+                        } else if (fotoPerfil.isNotBlank()) {
+                            Image(
+                                painter = rememberAsyncImagePainter(fotoPerfil),
+                                contentDescription = "Foto actual de perfil",
+                                modifier = imageModifier
+                            )
                         } else {
-                            Toast.makeText(context, "Error al subir la imagen", Toast.LENGTH_SHORT).show()
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Foto de perfil",
+                                modifier = imageModifier.size(60.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { launcher.launch("image/*") },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .clip(CircleShape)
+                                .size(30.dp)
+                                .background(MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Cambiar foto",
+                                tint = Color.White
+                            )
                         }
                     }
-                } else {
-                    actualizarUsuario(fotoPerfil) // Si no se seleccionó nueva foto, usar la URL ya guardada
                 }
-                          },
-        modifier = Modifier.fillMaxWidth()
-        ) {
-        Text("Guardar cambios")
-    }
+            }
+
+
+
+            Spacer(modifier = Modifier.height(30.dp))
+            }
+
+            item {
+
+            //SECCION BODY
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Nombre de usuario") },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                FechaNacimientoField(fechaNacimiento) {
+                    fechaNacimiento = it
+                }
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                GeneroDropdownField(genero) {
+                    genero = it
+                }
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                OutlinedTextField(
+                    value = telefono,
+                    onValueChange = { telefono = it },
+                    label = { Text("Teléfono") },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Button(
+                    onClick = {
+                        val actualizarUsuario: (String) -> Unit = { urlFinal ->
+                            val nuevoUsuario = Usuario(
+                                uid = uid,
+                                email = usuario?.email ?: "",
+                                username = username,
+                                telefono = telefono,
+                                fechaNacimiento = fechaNacimiento,
+                                genero = genero,
+                                fotoPerfil = urlFinal
+                            )
+                            actualizarPerfil(nuevoUsuario)
+                            Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+                        }
+
+                        if (imagenUri != null) {
+                            subirFotoPerfil(imagenUri!!, uid) { urlSubida ->
+                                if (urlSubida != null) {
+                                    actualizarUsuario(urlSubida)
+                                    fotoPerfil = urlSubida
+                                } else {
+                                    Toast.makeText(context, "Error al subir la imagen", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } else {
+                            actualizarUsuario(fotoPerfil)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                ) {
+                    Text("Guardar cambios")
+                }
+            }
+        }
     }
 }
 }
