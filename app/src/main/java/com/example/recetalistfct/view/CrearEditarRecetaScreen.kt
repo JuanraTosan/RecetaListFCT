@@ -8,11 +8,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -50,8 +53,11 @@ fun CrearEditarRecetaScreen(
 
     var nombre by rememberSaveable { mutableStateOf("") }
     var descripcion by rememberSaveable { mutableStateOf("") }
+
     var imagenUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var fotoUrl by rememberSaveable { mutableStateOf("") } // Foto principal desde Firebase
     var fotosGaleria by rememberSaveable { mutableStateOf<List<Uri>>(emptyList()) } // Lista para fotos extra
+    var fotoUrls by rememberSaveable { mutableStateOf<List<String>>(emptyList()) } // Fotos de galería desde Firebase
     var isUploading by rememberSaveable { mutableStateOf(false) }
 
     var tipoComida by rememberSaveable { mutableStateOf("") }
@@ -85,7 +91,15 @@ fun CrearEditarRecetaScreen(
                     Log.d("CrearRecetaScreen", "Receta encontrada: ${receta.nombre}")
                     nombre = receta.nombre
                     descripcion = receta.descripcion
+                    //foto principal
+                    fotoUrl = receta.fotoReceta
+                    //fotos de galeria
+                    fotoUrls = receta.fotosGaleriaReceta
+
+                    //limpiar cualquier seleccion previa de nueva imagen
+                    imagenUri = null
                     fotosGaleria = emptyList() // Esto podría sobreescribir imágenes nuevas
+
                     tipoComida = receta.tipoComida
                     dificultad = receta.dificultad
                     tiempoPreparacion = receta.tiempoPreparacionMin.toString()
@@ -118,28 +132,49 @@ fun CrearEditarRecetaScreen(
             //Imagen principal receta:
             Box(
                 modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray)
+                    .fillMaxWidth(1f) // Ocupa el 95% del ancho
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(8.dp)) // Cuadrado con esquinas ligeramente redondeadas
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .background(MaterialTheme.colorScheme.surface)
                     .clickable { launcher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
-                if (imagenUri != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(imagenUri),
-                        contentDescription = "Imagen de la receta",
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Seleccionar imagen",
-                        tint = Color.White
-                    )
+                when {
+                    imagenUri != null -> {
+                        Image(
+                            painter = rememberAsyncImagePainter(model = imagenUri),
+                            contentDescription = "Imagen nueva de receta",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    fotoUrl.isNotBlank() -> {
+                        Image(
+                            painter = rememberAsyncImagePainter(model = fotoUrl),
+                            contentDescription = "Imagen actual de receta",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    else -> {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Seleccionar imagen",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
 
             OutlinedTextField(
                 value = nombre,
@@ -148,7 +183,7 @@ fun CrearEditarRecetaScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
 
             OutlinedTextField(
                 value = descripcion,
@@ -157,7 +192,7 @@ fun CrearEditarRecetaScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(10.dp))
 
             // Tipo de comida
             ExposedDropdownMenuBox(
@@ -186,7 +221,7 @@ fun CrearEditarRecetaScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
 
             // Dificultad
             ExposedDropdownMenuBox(
@@ -314,19 +349,38 @@ fun CrearEditarRecetaScreen(
             Text("Galería de Fotos", style = MaterialTheme.typography.titleMedium)
 
             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                fotosGaleria.forEach { uri ->
+                // Mostrar fotos previamente subidas
+                fotoUrls.forEach { url ->
                     Box(
                         modifier = Modifier
                             .size(100.dp)
                             .padding(4.dp)
                             .clip(CircleShape)
                             .background(Color.Gray)
-                            .clickable { /* Acción cuando se hace clic en la imagen, si deseas verlo en detalle o eliminarlo */ }
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(url),
+                            contentDescription = "Foto de receta",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+
+                // Mostrar nuevas fotos seleccionadas
+                fotosGaleria.forEach { uri ->
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(4.dp)
+                            .clip(CircleShape)
+                            .background(Color.LightGray)
                     ) {
                         Image(
                             painter = rememberAsyncImagePainter(uri),
-                            contentDescription = "Imagen galería",
-                            modifier = Modifier.fillMaxSize()
+                            contentDescription = "Nueva foto de galería",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
                     }
                 }
@@ -334,26 +388,68 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Botón para seleccionar más fotos
-            Button(onClick = { multipleImagesLauncher.launch("image/*") }) {
+            Button(
+                onClick = { multipleImagesLauncher.launch("image/*") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text("Añadir fotos a la galería")
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(24.dp))
 
 
             Button(
                 onClick = {
-                    if (nombre.isNotBlank() && descripcion.isNotBlank() && imagenUri != null) {
+                    if (nombre.isNotBlank() && descripcion.isNotBlank() && imagenUri != null || fotoUrl.isNotBlank()) {
                         isUploading = true
-                        RecetaController.subirImagenReceta(imagenUri!!, uid) { fotoUrl ->
-                            RecetaController.subirMultiplesImagenesReceta(
-                                fotosGaleria,
-                                uid
-                            ) { galeriaUrls ->
-                                if (fotoUrl != null) {
 
+                        // Usar foto actual o subir una nueva
+                        if (imagenUri != null) {
+                            // Subir nueva imagen y actualizar
+                            RecetaController.subirImagenReceta(imagenUri!!, uid) { nuevaUrlFoto ->
+                                if (nuevaUrlFoto == null) {
+                                    isUploading = false
+                                    Toast.makeText(context, "Error al subir imagen", Toast.LENGTH_SHORT).show()
+                                    return@subirImagenReceta
+                                }
 
+                                // Subir nuevas fotos de galería
+                                RecetaController.subirMultiplesImagenesReceta(fotosGaleria, uid) { galeriaUrls ->
+                                    val todasLasFotosGaleria = if (recetaId != null) {
+                                        // Modo edición: combinar fotos anteriores con nuevas subidas
+                                        (fotoUrls + galeriaUrls).distinct()
+                                    } else {
+                                        // Modo creación: usar solo las nuevas fotos
+                                        galeriaUrls
+                                    }
+
+                                    // Crear receta con las fotos adecuadas
+                                    val receta = Receta(
+                                        id = recetaId ?: UUID.randomUUID().toString(),
+                                        nombre = nombre,
+                                        descripcion = descripcion,
+                                        fotoReceta = nuevaUrlFoto,
+                                        usuarioId = uid,
+                                        ingredientes = ingredientes.toList(),
+                                        fechaCreacion = System.currentTimeMillis(),
+                                        fotosGaleriaReceta = todasLasFotosGaleria,
+                                        tipoComida = tipoComida,
+                                        dificultad = dificultad,
+                                        tiempoPreparacionMin = tiempoPreparacion.toIntOrNull() ?: 0
+                                    )
+
+                                    // Guardar receta
+                                    RecetaController.guardarReceta(receta) { success ->
+                                        isUploading = false
+                                        if (success) {
+                                            Toast.makeText(context, "Receta guardada!", Toast.LENGTH_SHORT).show()
+                                            navController.popBackStack()
+                                        } else {
+                                            Toast.makeText(context, "Error al guardar receta", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+
+                                    // Actualizar ingredientes con nuevo ID si estamos editando
                                     if (recetaId != null) {
                                         val ingredientesConReceta = ingredientes.map { ingrediente ->
                                             if (recetaId in ingrediente.recetaIds) {
@@ -363,12 +459,22 @@ fun CrearEditarRecetaScreen(
                                             }
                                         }
 
-                                        // Actualizar en base de datos
                                         ingredientesConReceta.forEach { ingredienteActualizado ->
-                                            IngredienteController.guardarIngrediente(
-                                                ingredienteActualizado
-                                            ) {}
+                                            IngredienteController.guardarIngrediente(ingredienteActualizado) {}
                                         }
+                                    }
+                                }
+                            }
+                        } else {
+                            // Si hay imagenUri, usa esa; si no, usa la fotoUrl actual
+                            fotoUrl.takeIf { recetaId != null && it.isNotBlank() }?.let { existingUrl ->
+
+                                // No se ha seleccionado nueva imagen → mantener fotoUrl
+                                RecetaController.subirMultiplesImagenesReceta(fotosGaleria, uid) { galeriaUrls ->
+                                    val todasLasFotosGaleria = if (recetaId != null) {
+                                        (fotoUrls + galeriaUrls).distinct()
+                                    } else {
+                                        galeriaUrls
                                     }
 
                                     val receta = Receta(
@@ -379,36 +485,39 @@ fun CrearEditarRecetaScreen(
                                         usuarioId = uid,
                                         ingredientes = ingredientes.toList(),
                                         fechaCreacion = System.currentTimeMillis(),
-                                        fotosGaleriaReceta = galeriaUrls,
+                                        fotosGaleriaReceta = todasLasFotosGaleria,
                                         tipoComida = tipoComida,
                                         dificultad = dificultad,
                                         tiempoPreparacionMin = tiempoPreparacion.toIntOrNull() ?: 0
                                     )
+
                                     RecetaController.guardarReceta(receta) { success ->
                                         isUploading = false
                                         if (success) {
-                                            Toast.makeText(
-                                                context,
-                                                "Receta guardada!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            navController.popBackStack() // Vuelve atrás
+                                            Toast.makeText(context, "Receta guardada!", Toast.LENGTH_SHORT).show()
+                                            navController.popBackStack()
                                         } else {
-                                            Toast.makeText(
-                                                context,
-                                                "Error al guardar receta",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            Toast.makeText(context, "Error al guardar receta", Toast.LENGTH_SHORT).show()
                                         }
                                     }
-                                } else {
-                                    isUploading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Error al subir imagen",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+
+                                    if (recetaId != null) {
+                                        val ingredientesConReceta = ingredientes.map { ingrediente ->
+                                            if (recetaId in ingrediente.recetaIds) {
+                                                ingrediente
+                                            } else {
+                                                ingrediente.copy(recetaIds = ingrediente.recetaIds + recetaId)
+                                            }
+                                        }
+
+                                        ingredientesConReceta.forEach { ingrediente ->
+                                            IngredienteController.guardarIngrediente(ingrediente) {}
+                                        }
+                                    }
                                 }
+                            } ?: run {
+                                isUploading = false
+                                Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } else {

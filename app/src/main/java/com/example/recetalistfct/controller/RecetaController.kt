@@ -14,11 +14,11 @@ import java.util.UUID
 object RecetaController {
 
     private val database = FirebaseDatabase.getInstance().reference
-    private val storage = FirebaseStorage.getInstance()
+    private val storage = FirebaseStorage.getInstance().reference
 
     fun subirImagenReceta(uri: Uri, uid: String, onComplete: (String?) -> Unit) {
         val fileName = "fotos-recetas/$uid-${UUID.randomUUID()}.jpg"
-        val ref = storage.reference.child(fileName)
+        val ref = storage.child(fileName)
 
         ref.putFile(uri)
             .continueWithTask { task ->
@@ -36,7 +36,6 @@ object RecetaController {
         uid: String,
         onComplete: (List<String>) -> Unit
     ) {
-        val storageRef = FirebaseStorage.getInstance().reference
         val urls = mutableListOf<String>()
         var uploadedCount = 0
 
@@ -47,7 +46,7 @@ object RecetaController {
 
         uris.forEach { uri ->
             val fileName = "galeria-recetas/$uid-${UUID.randomUUID()}.jpg"
-            val imageRef = storageRef.child(fileName)
+            val imageRef = storage.child(fileName)
 
             imageRef.putFile(uri).continueWithTask { task ->
                 if (!task.isSuccessful) {

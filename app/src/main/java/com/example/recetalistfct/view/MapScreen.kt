@@ -1,96 +1,58 @@
 package com.example.recetalistfct.view
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
+import android.Manifest
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.request.ImageRequest
-import com.example.recetalistfct.R
 import com.example.recetalistfct.components.BottomBar
-
-import com.google.android.gms.maps.UiSettings
-/*
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
-
- */
+import com.example.recetalistfct.components.PlacesCardList
+import com.example.recetalistfct.controller.PlaceController.rememberPlaces
+import com.example.recetalistfct.model.Place
+import com.example.recetalistfct.utils.getCurrentLocation
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
-
-
-import kotlinx.coroutines.delay
-import kotlin.math.sin
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.remember
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun MapScreen(navController: NavController) {
-
     val context = LocalContext.current
-    //val placesClient = remember { Places.createClient(context) }
-    val scope = rememberCoroutineScope()
-    //var placesList by remember { mutableStateOf(listOf<String>()) }
+    var currentLocation by remember { mutableStateOf<LatLng?>(null) }
+    var cameraPosition by remember { mutableStateOf<CameraPosition?>(null) }
 
-    /*
-        var hasLocationPermission by remember {
-            mutableStateOf(
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            )
-        }
+    // Estado para posición del marcador del mapa
+    val places = rememberPlaces()
 
-        // Launcher para pedir permiso
-        val permissionLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            hasLocationPermission = isGranted
-        }
-
-        // Pedir permiso al entrar si no está concedido
-        LaunchedEffect(Unit) {
-            if (!hasLocationPermission) {
-                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    // Para manejar el lanzamiento del permiso
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            // Permiso concedido, obtenemos la ubicación
+            getCurrentLocation(context) { lat, lon ->
+                currentLocation = LatLng(lat, lon)
             }
+        } else {
+            // Permiso denegado
+            Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        LaunchedEffect(Unit) {
-            val placeFields = listOf(Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS)
-            val request = FindCurrentPlaceRequest.newInstance(placeFields)
-
-            val task = placesClient.findCurrentPlace(request)
-            task.addOnSuccessListener { response ->
-                placesList = response.placeLikelihoods.map { it.place.name ?: "Sin nombre" }
-            }.addOnFailureListener {
-                placesList = listOf("No se pudo cargar lugares")
-            }
-        }
-
-        */
-
+    // Pide el permiso si no está concedido
+    LaunchedEffect(Unit) {
+        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
 
     Scaffold(
         bottomBar = {
@@ -102,26 +64,73 @@ fun MapScreen(navController: NavController) {
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            // Mapa
-            GoogleMap(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                uiSettings = MapUiSettings(zoomControlsEnabled = false)
-            )
-// Lista de lugares si hay permiso
-            //if (hasLocationPermission) {
-                //PlacesList() // aquí puedes poner tu lógica de Places API
-            //} else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Estamos trabajando en ello...")
+                contentAlignment = Alignment.Center
+            ) {
+                if (currentLocation != null) {
+                    MyGoogleMaps(location = currentLocation!!,
+                        places = places,
+                        cameraPosition = cameraPosition
+                    )
+                } else {
+                    Text("Obteniendo ubicación...")
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                if (places.isNotEmpty()) {
+                    PlacesCardList(places = places) { latLng ->
+                        cameraPosition = CameraPosition.fromLatLngZoom(latLng, 15f)
+                    }
+                } else {
+                    Text("No hay lugares disponibles")
                 }
             }
         }
     }
-//}
+}
+
+@Composable
+fun MyGoogleMaps(
+    location: LatLng,
+    places: List<Place>,
+    cameraPosition: CameraPosition?
+){
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(location, 15f)
+    }
+
+    // Cambia la cámara si se selecciona un lugar
+    if (cameraPosition != null) {
+        cameraPositionState.position = cameraPosition
+    }
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        uiSettings = MapUiSettings(zoomControlsEnabled = false)
+    ) {
+        // Marcador de mi ubicación
+        Marker(
+            state = MarkerState(position = location)
+        ) {
+            it.title = "Mi ubicación"
+        }
+
+        // Marcadores de los lugares guardados
+        places.forEach { place ->
+            Marker(
+                state = MarkerState(position = LatLng(place.lat, place.lon)),
+                title = place.name
+            )
+        }
+    }
+}

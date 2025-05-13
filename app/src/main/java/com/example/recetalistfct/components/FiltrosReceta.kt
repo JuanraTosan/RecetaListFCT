@@ -1,11 +1,13 @@
 package com.example.recetalistfct.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -14,7 +16,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -129,19 +131,39 @@ fun FiltrosReceta(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = {
-                onApplyFilter(
-                    RecetaFilter(
-                        tipoComida = tipoSeleccionado,
-                        dificultad = dificultadSeleccionada,
-                        tiempoMin = tiempoInt
-                    )
-                )
-            },
-            modifier = Modifier.align(Alignment.End)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Aplicar filtros")
+            // Botón Limpiar filtros
+            TextButton(
+                onClick = {
+                    tipoSeleccionado = ""
+                    dificultadSeleccionada = ""
+                    maxTiempo = ""
+                    tiempoInt = 0
+                },
+                enabled = tipoSeleccionado.isNotBlank() || dificultadSeleccionada.isNotBlank() || tiempoInt > 0 || maxTiempo.isNotBlank()
+            ) {
+                Text(text = "Limpiar")
+            }
+
+            // Botón Aplicar filtros
+            Button(
+                onClick = {
+                    onApplyFilter(
+                        RecetaFilter(
+                            tipoComida = tipoSeleccionado,
+                            dificultad = dificultadSeleccionada,
+                            tiempoMin = tiempoInt
+                        )
+                    )
+                },
+                modifier = Modifier.wrapContentWidth()
+            ) {
+                Text("Aplicar filtros")
+            }
         }
     }
 }

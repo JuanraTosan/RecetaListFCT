@@ -16,7 +16,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.compose.ui.platform.LocalDensity
@@ -24,6 +23,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -44,7 +44,7 @@ fun HomeScreen(navController: NavHostController) {
     val userId = firebaseUser?.uid
 
     val activity = LocalActivity.current
-    ?: throw IllegalStateException("LoginScreen debe estar alojada en una Activity")
+        ?: throw IllegalStateException("LoginScreen debe estar alojada en una Activity")
 
     var usuario by remember { mutableStateOf<Usuario?>(null) }
     var fotoPerfil by remember { mutableStateOf("") }
@@ -52,28 +52,22 @@ fun HomeScreen(navController: NavHostController) {
     val recetas = remember { mutableStateListOf<Receta>() }
     val cargando = remember { mutableStateOf(true) }
 
-    var searchQuery by rememberSaveable { mutableStateOf("") }
+
     var isMenuOpen by remember { mutableStateOf(false) }
     var mostrarFiltros by remember { mutableStateOf(false) }
-    val recetasFiltradasPorBusqueda = remember(searchQuery) {
-        derivedStateOf {
-            if (searchQuery.isBlank() || searchQuery == "") {
-                // Si no hay texto, mostramos todas
-                recetas
-            } else {
-                // Buscamos por nombre ignorando mayúsculas/minúsculas
-                recetas.filter { receta ->
-                    receta.nombre.contains(searchQuery, ignoreCase = true)
-                }
-            }
-        }
-    }
+
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var tipoSeleccionado by rememberSaveable { mutableStateOf("") }
+    var dificultadSeleccionada by rememberSaveable { mutableStateOf("") }
+    var tiempoInt by rememberSaveable { mutableStateOf(0) }
+
 
     val focusManager = LocalFocusManager.current
 
     // Detectar el estado del teclado
     val imeVisible = LocalDensity.current.density < 0.5
-    val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route ?: "home"
+    val currentDestination =
+        navController.currentBackStackEntryAsState().value?.destination?.route ?: "home"
 
     val expanded = remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -116,8 +110,8 @@ fun HomeScreen(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(Unit){
-                detectTapGestures ( onTap = {
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
                     focusManager.clearFocus()
                 })
             }
@@ -150,12 +144,20 @@ fun HomeScreen(navController: NavHostController) {
                                 singleLine = true,
                                 shape = RoundedCornerShape(16.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(
+                                        alpha = 0.2f
+                                    ),
+                                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(
+                                        alpha = 0.3f
+                                    ),
                                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.6f
+                                    ),
+                                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.8f
+                                    ),
                                 )
                             )
                         }
@@ -177,11 +179,11 @@ fun HomeScreen(navController: NavHostController) {
                             }
                             FastSettings(
                                 expanded = isMenuOpen,
-                                onDismissRequest = { isMenuOpen = false},
+                                onDismissRequest = { isMenuOpen = false },
                                 navController = navController,
                                 context = context,
                                 activity = activity
-                                )
+                            )
                         }
                     }
                 )
@@ -223,40 +225,93 @@ fun HomeScreen(navController: NavHostController) {
                             }
                         }
 
+                        // Menú desplegable de filtros
                         if (mostrarFiltros) {
                             FiltrosReceta(
                                 navController = navController,
                                 onApplyFilter = { filtro ->
-                                    val filteredList = recetasFiltradasPorBusqueda.value.filter { receta ->
-                                        val matchesTipoComida =
-                                            filtro.tipoComida.isEmpty() || receta.tipoComida.equals(filtro.tipoComida, ignoreCase = true)
-
-                                        val matchesDificultad =
-                                            filtro.dificultad.isEmpty() || receta.dificultad.equals(filtro.dificultad, ignoreCase = true)
-
-                                        val matchesTiempo =
-                                            filtro.tiempoMin <= 0 || receta.tiempoPreparacionMin <= filtro.tiempoMin
-
-                                        matchesTipoComida && matchesDificultad && matchesTiempo
-                                    }
-
-                                    // Actualizamos la lista global con el resultado combinado
-                                    recetas.clear()
-                                    recetas.addAll(filteredList)
+                                    tipoSeleccionado = filtro.tipoComida
+                                    dificultadSeleccionada = filtro.dificultad
+                                    tiempoInt = filtro.tiempoMin
                                 }
                             )
                         }
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 8.dp)
+
+                        // Lista de recetas filtradas
+                        val recetasFiltradas = remember(
+                            searchQuery,
+                            tipoSeleccionado,
+                            dificultadSeleccionada,
+                            tiempoInt,
+                            recetas
                         ) {
-                            items(recetasFiltradasPorBusqueda.value) { receta ->
-                                RecetaCard(
-                                    receta = receta,
-                                    onClick = {
-                                        navController.navigate("detalleRecetas/${receta.id}")
-                                    }
+                            derivedStateOf {
+                                recetas.filter { receta ->
+                                    val matchesSearch =
+                                        searchQuery.isBlank() || receta.nombre.contains(
+                                            searchQuery,
+                                            ignoreCase = true
+                                        )
+                                    val matchesTipoComida =
+                                        tipoSeleccionado.isBlank() || receta.tipoComida.equals(
+                                            tipoSeleccionado,
+                                            ignoreCase = true
+                                        )
+                                    val matchesDificultad =
+                                        dificultadSeleccionada.isBlank() || receta.dificultad.equals(
+                                            dificultadSeleccionada,
+                                            ignoreCase = true
+                                        )
+                                    val matchesTiempo =
+                                        tiempoInt <= 0 || receta.tiempoPreparacionMin <= tiempoInt
+
+                                    matchesSearch && matchesTipoComida && matchesDificultad && matchesTiempo
+                                }
+                            }
+                        }
+
+                        val hayResultados by remember {
+                            derivedStateOf {
+                                recetasFiltradas.value.isNotEmpty()
+                            }
+                        }
+
+                        if (cargando.value) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        } else if (hayResultados) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                items(recetasFiltradas.value) { receta ->
+                                    RecetaCard(
+                                        receta = receta,
+                                        onClick = {
+                                            navController.navigate("detalleRecetas/${receta.id}")
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (searchQuery.isNotBlank() || tipoSeleccionado.isNotBlank() || dificultadSeleccionada.isNotBlank() || tiempoInt > 0) {
+                                        "No se encontraron recetas con esos criterios."
+                                    } else {
+                                        "No hay recetas disponibles aún."
+                                    },
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         }

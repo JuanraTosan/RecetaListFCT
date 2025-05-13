@@ -19,6 +19,7 @@ ui = "1.7.8"
 uiTooling = "1.7.8"
 uiToolingPreview = "1.7.8"
 navigationComposeVersion = "2.8.9"
+playServicesLocationVersion = "21.3.0"
 
 [libraries]
 androidx-activity-compose-v180 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -50,6 +51,7 @@ ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiTooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeVersion" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocationVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
