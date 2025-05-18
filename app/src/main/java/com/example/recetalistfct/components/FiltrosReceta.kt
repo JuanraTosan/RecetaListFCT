@@ -25,17 +25,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.recetalistfct.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FiltrosReceta(
     navController: NavController,
-    onApplyFilter: (filter: RecetaFilter) -> Unit
+    onApplyFilter: (String, String, Int) -> Unit
 ) {
-    val tiposComida = listOf("Desayuno", "Comida", "Cena", "Postres")
-    val nivelesDificultad = listOf("Fácil", "Medio", "Difícil")
+    val tiposComida = listOf(
+        stringResource(R.string.breakfast),
+        stringResource(R.string.lunch),
+        stringResource(R.string.dinner),
+        stringResource(R.string.dessert)
+    )
+    val nivelesDificultad = listOf(
+        stringResource(R.string.easy),
+        stringResource(R.string.medium),
+        stringResource(R.string.hard)
+    )
 
     var tipoSeleccionado by remember { mutableStateOf("") }
     var dificultadSeleccionada by remember { mutableStateOf("") }
@@ -55,7 +66,7 @@ fun FiltrosReceta(
             OutlinedTextField(
                 value = tipoSeleccionado,
                 onValueChange = {},
-                label = { Text("Tipo de comida") },
+                label = { Text(stringResource(R.string.type_of_meal)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTipo) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 readOnly = true,
@@ -90,7 +101,7 @@ fun FiltrosReceta(
             OutlinedTextField(
                 value = dificultadSeleccionada,
                 onValueChange = {},
-                label = { Text("Dificultad") },
+                label = {Text(stringResource(R.string.difficulty_level)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDificultad) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 readOnly = true,
@@ -125,7 +136,7 @@ fun FiltrosReceta(
                     tiempoInt = it.toIntOrNull() ?: 0
                 }
             },
-            label = { Text("Tiempo de preparación. (min)") },
+            label = { Text(stringResource(R.string.preparation_time)) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -146,31 +157,22 @@ fun FiltrosReceta(
                 },
                 enabled = tipoSeleccionado.isNotBlank() || dificultadSeleccionada.isNotBlank() || tiempoInt > 0 || maxTiempo.isNotBlank()
             ) {
-                Text(text = "Limpiar")
+                Text(text = stringResource(R.string.clear_filters))
             }
 
             // Botón Aplicar filtros
             Button(
                 onClick = {
                     onApplyFilter(
-                        RecetaFilter(
-                            tipoComida = tipoSeleccionado,
-                            dificultad = dificultadSeleccionada,
-                            tiempoMin = tiempoInt
-                        )
+                             tipoSeleccionado,
+                             dificultadSeleccionada,
+                             tiempoInt
                     )
                 },
                 modifier = Modifier.wrapContentWidth()
             ) {
-                Text("Aplicar filtros")
+                Text(stringResource(R.string.apply_filters))
             }
         }
     }
 }
-
-// Clase auxiliar para filtros
-data class RecetaFilter(
-    val tipoComida: String = "",
-    val dificultad: String = "",
-    val tiempoMin: Int = 0
-)

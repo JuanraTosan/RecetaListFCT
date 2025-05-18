@@ -4,5 +4,6 @@ data class Ingrediente(
     val id: String = "",
     val nombre: String = "",
     val cantidad: String = "",
-    val recetaIds: List<String> = emptyList()
+    val recetaIds: List<String> = emptyList(),
+    var comprado: Boolean = false
 )

@@ -18,6 +18,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -72,7 +73,7 @@ fun RegistroScreen(navController: NavHostController) {
         ) {
             // Título
             Text(
-                text = "Crear Cuenta",
+                text = stringResource(R.string.register),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -83,7 +84,7 @@ fun RegistroScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
-                label = { Text("Usuario") },
+                label = { Text(stringResource(R.string.username)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -97,7 +98,7 @@ fun RegistroScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Correo Electrónico") },
+                label = { Text(stringResource(R.string.email)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -111,7 +112,7 @@ fun RegistroScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña") },
+                label = { Text(stringResource(R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -126,7 +127,7 @@ fun RegistroScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                label = { Text("Confirmar Contraseña") },
+                label = { Text(stringResource(R.string.confirm_password)) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -181,14 +182,14 @@ fun RegistroScreen(navController: NavHostController) {
                     .padding(top = 16.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Registrarse")
+                Text(stringResource(R.string.register))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Enlace a iniciar sesión
             TextButton(onClick = { navController.navigate("login") }) {
-                Text("¿Ya tienes cuenta? Inicia sesión")
+                Text(stringResource(R.string.already_have_account_login))
             }
         }
     }

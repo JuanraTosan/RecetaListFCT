@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -81,7 +82,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Iniciar sesión",
+                text = stringResource(R.string.login),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -92,7 +93,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Correo Electrónico") },
+                label = { Text(stringResource(R.string.email)) },
                 modifier = Modifier
                     .fillMaxWidth(),
                 singleLine = true,
@@ -110,7 +111,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña") },
+                label = { Text(stringResource(R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -163,13 +164,13 @@ fun LoginScreen(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Iniciar Sesión")
+                Text(stringResource(R.string.login))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(onClick = { navController.navigate("register") }) {
-                Text("¿No tienes una cuenta? Regístrate")
+                Text(stringResource(R.string.dont_have_account_register))
             }
         }
     }

@@ -5,7 +5,6 @@ import android.util.Log
 import com.example.recetalistfct.model.Receta
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
@@ -97,7 +96,6 @@ object RecetaController {
     }
 
     fun obtenerRecetaPorId(recetaId: String, onResult: (Receta?) -> Unit) {
-        val database: DatabaseReference = FirebaseDatabase.getInstance().reference
         val recetaRef = database.child("receta").child(recetaId)
 
         recetaRef.get().addOnSuccessListener { snapshot ->

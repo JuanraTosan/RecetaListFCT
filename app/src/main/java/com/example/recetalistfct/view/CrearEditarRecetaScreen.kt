@@ -29,10 +29,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.recetalistfct.R
 import com.example.recetalistfct.controller.IngredienteController
 import com.example.recetalistfct.controller.RecetaController
 import com.example.recetalistfct.controller.RecetaController.obtenerRecetaPorId
@@ -123,7 +125,7 @@ fun CrearEditarRecetaScreen(
         ) {
             // Título dinámico
             Text(
-                text = if (recetaId == null) "Crear Nueva Receta" else "Edición de receta",
+                stringResource(id = if (recetaId == null) R.string.create_recipe else R.string.edit_recipe),
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -179,7 +181,7 @@ fun CrearEditarRecetaScreen(
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
-                label = { Text("Nombre de la receta") },
+                label = { Text(stringResource(R.string.recipe_name)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -188,7 +190,7 @@ fun CrearEditarRecetaScreen(
             OutlinedTextField(
                 value = descripcion,
                 onValueChange = { descripcion = it },
-                label = { Text("Descripción") },
+                label = { Text(stringResource(R.string.description)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -203,7 +205,7 @@ fun CrearEditarRecetaScreen(
                 OutlinedTextField(
                     value = tipoComida,
                     onValueChange = {},
-                    label = { Text("Tipo de comida") },
+                    label = { Text(stringResource(R.string.type_of_meal)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
                     readOnly = true,
                     modifier = Modifier.menuAnchor().fillMaxWidth()
@@ -232,7 +234,7 @@ fun CrearEditarRecetaScreen(
                 OutlinedTextField(
                     value = dificultad,
                     onValueChange = {},
-                    label = { Text("Nivel de dificultad") },
+                    label = { Text(stringResource(R.string.difficulty_level)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
                     readOnly = true,
                     modifier = Modifier.menuAnchor().fillMaxWidth()
@@ -257,7 +259,7 @@ fun CrearEditarRecetaScreen(
             OutlinedTextField(
                 value = tiempoPreparacion,
                 onValueChange = { tiempoPreparacion = it },
-                label = { Text("Tiempo de preparación (min)") },
+                label = { Text(stringResource(R.string.preparation_time)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -265,7 +267,7 @@ fun CrearEditarRecetaScreen(
             Spacer(Modifier.height(16.dp))
 
 
-            Text("Ingredientes", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.ingredients), style = MaterialTheme.typography.titleMedium)
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -274,7 +276,7 @@ fun CrearEditarRecetaScreen(
                 OutlinedTextField(
                     value = nombreIngrediente,
                     onValueChange = { nombreIngrediente = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.name)) },
                     modifier = Modifier.weight(1f)
                 )
 
@@ -283,7 +285,7 @@ fun CrearEditarRecetaScreen(
                 OutlinedTextField(
                     value = cantidadIngrediente,
                     onValueChange = { cantidadIngrediente = it },
-                    label = { Text("Cantidad") },
+                    label = { Text(stringResource(R.string.amount)) },
                     modifier = Modifier.weight(1f)
                 )
 
@@ -346,7 +348,7 @@ fun CrearEditarRecetaScreen(
 
             // Mostrar fotos de la galería como un carrusel horizontal
             Spacer(Modifier.height(16.dp))
-            Text("Galería de Fotos", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.gallery_pictures), style = MaterialTheme.typography.titleMedium)
 
             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
                 // Mostrar fotos previamente subidas
@@ -392,7 +394,7 @@ fun CrearEditarRecetaScreen(
                 onClick = { multipleImagesLauncher.launch("image/*") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Añadir fotos a la galería")
+                Text(stringResource(R.string.add_photos_to_gallery))
             }
 
             Spacer(Modifier.height(24.dp))
@@ -527,7 +529,7 @@ fun CrearEditarRecetaScreen(
                 enabled = !isUploading,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (isUploading) "Guardando..." else if (recetaId == null) "Guardar Receta" else "Actualizar Receta")
+                Text(if (isUploading) stringResource(R.string.uploading) else if (recetaId == null) stringResource(R.string.save_recipe) else stringResource(R.string.update_recipe))
             }
         }
 
@@ -535,8 +537,8 @@ fun CrearEditarRecetaScreen(
         if (showReplaceDialog && ingredienteDuplicado != null) {
             AlertDialog(
                 onDismissRequest = { showReplaceDialog = false },
-                title = { Text("Ingrediente duplicado") },
-                text = { Text("Ya existe un ingrediente con ese nombre. ¿Deseas reemplazarlo?") },
+                title = { Text(stringResource(R.string.duplicate_ingredient)) },
+                text = { Text(stringResource(R.string.duplicate_ingredient_text)) },
                 confirmButton = {
                     TextButton(onClick = {
                         ingredientes.removeAll { it.nombre.equals(ingredienteDuplicado!!.nombre, ignoreCase = true) }
@@ -546,12 +548,12 @@ fun CrearEditarRecetaScreen(
                         showReplaceDialog = false
                         Toast.makeText(context, "Ingrediente actualizado", Toast.LENGTH_SHORT).show()
                     }) {
-                        Text("Reemplazar")
+                        Text(stringResource(R.string.replace))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showReplaceDialog = false }) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )

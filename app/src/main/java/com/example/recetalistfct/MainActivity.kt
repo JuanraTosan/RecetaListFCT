@@ -28,6 +28,7 @@ import com.example.recetalistfct.view.PerfilScreen
 import com.example.recetalistfct.view.RegistroScreen
 //import com.google.android.libraries.places.api.Places
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,12 +48,6 @@ class MainActivity : ComponentActivity() {
         val savedDarkMode = getSavedThemePreference(this)
 
         UserSessionManager.init(this)
-
-/*
-        if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "AIzaSyC89hxw56weyKc77KPDYU_05L0LBr_cy5w")
-        }
-*/
 
 
         enableEdgeToEdge()
@@ -115,11 +110,11 @@ fun MainScreen(
                 navController = navController
             )
         }
+
         composable("carrito") {
-            CarritoScreen(
-                navController = navController
-            )
+            CarritoScreen(navController = navController)
         }
+
         composable("detalleRecetas/{recetaId}") { backStackEntry ->
             val recetaId = backStackEntry.arguments!!.getString("recetaId")!!
             DetalleRecetaScreen(

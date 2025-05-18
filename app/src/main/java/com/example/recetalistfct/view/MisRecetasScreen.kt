@@ -17,9 +17,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.recetalistfct.R
 import com.example.recetalistfct.model.Receta
 import com.example.recetalistfct.components.BottomBar
 import com.example.recetalistfct.components.ConfirmDeleteDialog
@@ -51,7 +53,7 @@ fun MisRecetasScreen(navController: NavController) {
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                Text("Mis Recetas", style = MaterialTheme.typography.headlineMedium)
+                Text(stringResource(R.string.my_recipes), style = MaterialTheme.typography.headlineMedium)
 
                 Spacer(Modifier.height(16.dp))
 
@@ -136,7 +138,7 @@ fun MisRecetasScreen(navController: NavController) {
                         .fillMaxWidth()
                         .padding(vertical = 12.dp)
                 ) {
-                    Text("Añadir Receta")
+                    Text(stringResource(R.string.add_recipe))
                 }
             }
 

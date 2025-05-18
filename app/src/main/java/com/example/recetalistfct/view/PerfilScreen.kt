@@ -22,9 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.recetalistfct.R
 import com.example.recetalistfct.components.BottomBar
 import com.example.recetalistfct.components.FechaNacimientoField
 import com.example.recetalistfct.components.GeneroDropdownField
@@ -102,7 +104,7 @@ fun PerfilScreen(navController: NavController) {
                 ) {
 
                     Text(
-                        text = "Configuración de Perfil",
+                        stringResource(R.string.my_profile),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -174,7 +176,7 @@ fun PerfilScreen(navController: NavController) {
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Nombre de usuario") },
+                    label = { Text(stringResource(R.string.username)) },
                     modifier = Modifier.fillMaxWidth(0.8f)
                 )
 
@@ -195,7 +197,7 @@ fun PerfilScreen(navController: NavController) {
                 OutlinedTextField(
                     value = telefono,
                     onValueChange = { telefono = it },
-                    label = { Text("Teléfono") },
+                    label = { Text(stringResource(R.string.phone_number)) },
                     modifier = Modifier.fillMaxWidth(0.8f)
                 )
 
@@ -233,7 +235,7 @@ fun PerfilScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                 ) {
-                    Text("Guardar cambios")
+                    Text(stringResource(R.string.save_changes))
                 }
             }
         }

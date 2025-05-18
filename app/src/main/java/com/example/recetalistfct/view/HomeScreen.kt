@@ -23,10 +23,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.recetalistfct.R
 import com.example.recetalistfct.components.BottomBar
 import com.example.recetalistfct.components.FastSettings
 import com.example.recetalistfct.components.FiltrosReceta
@@ -136,11 +138,11 @@ fun HomeScreen(navController: NavHostController) {
                             OutlinedTextField(
                                 value = searchQuery,
                                 onValueChange = { searchQuery = it },
-                                label = { Text("Buscar receta...") },
+                                label = { Text(stringResource(R.string.search_recipe)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(end = 8.dp)
-                                    .height(56.dp),
+                                    .heightIn(max = 65.dp),
                                 singleLine = true,
                                 shape = RoundedCornerShape(16.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -213,7 +215,7 @@ fun HomeScreen(navController: NavHostController) {
                                 .padding(horizontal = 16.dp)
                         ) {
                             Text(
-                                text = "Lista de Recetas",
+                                stringResource(R.string.recipe_list),
                                 style = MaterialTheme.typography.titleLarge
                             )
 
@@ -229,10 +231,10 @@ fun HomeScreen(navController: NavHostController) {
                         if (mostrarFiltros) {
                             FiltrosReceta(
                                 navController = navController,
-                                onApplyFilter = { filtro ->
-                                    tipoSeleccionado = filtro.tipoComida
-                                    dificultadSeleccionada = filtro.dificultad
-                                    tiempoInt = filtro.tiempoMin
+                                onApplyFilter = { tipo, dificultad, tiempo ->
+                                    tipoSeleccionado = tipo
+                                    dificultadSeleccionada = dificultad
+                                    tiempoInt = tiempo
                                 }
                             )
                         }
@@ -307,9 +309,9 @@ fun HomeScreen(navController: NavHostController) {
                             ) {
                                 Text(
                                     text = if (searchQuery.isNotBlank() || tipoSeleccionado.isNotBlank() || dificultadSeleccionada.isNotBlank() || tiempoInt > 0) {
-                                        "No se encontraron recetas con esos criterios."
+                                        stringResource(R.string.no_recipes_found_with_filters)
                                     } else {
-                                        "No hay recetas disponibles aún."
+                                        stringResource(R.string.no_recipes_available_yet)
                                     },
                                     textAlign = TextAlign.Center
                                 )

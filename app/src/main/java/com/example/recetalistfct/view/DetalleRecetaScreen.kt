@@ -1,5 +1,6 @@
 package com.example.recetalistfct.view
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,11 +18,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.recetalistfct.R
 import com.example.recetalistfct.components.CarruselDeFotos
+import com.example.recetalistfct.controller.CarritoController.anadirIngredientes
 import com.example.recetalistfct.controller.IngredienteController
 import com.example.recetalistfct.controller.RecetaController.obtenerRecetaPorId
 import com.example.recetalistfct.model.Ingrediente
@@ -35,6 +41,7 @@ fun DetalleRecetaScreen(
     navController: NavController,
     recetaId: String
 ) {
+    val context = LocalContext.current
     var receta by remember { mutableStateOf<Receta?>(null) }
     var ingredientes by remember { mutableStateOf<List<Ingrediente>>(emptyList()) }
     var isLoadingIngredients by remember { mutableStateOf(false) }
@@ -63,7 +70,23 @@ fun DetalleRecetaScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detalles de la Receta") },
+                title = { Text(stringResource(R.string.recipe_detail)) },
+                actions = {if (currentUserId == receta?.usuarioId) {
+                    IconButton(
+                        onClick = {
+                            receta?.id?.let {
+                                navController.navigate("crearRecetas/$it")
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(R.string.edit_recipe),
+                            tint = Color.White
+                        )
+                    }
+                }
+                },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
@@ -106,30 +129,6 @@ fun DetalleRecetaScreen(
                         )
                     }
 
-                    // Mostrar botón de editar solo si el usuario es el propietario
-                    if (currentUserId == recetaData.usuarioId) {
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        navController.navigate("crearRecetas/${recetaData.id}")
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Editar receta",
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     // Nombre
                     item {
                         Text(
@@ -155,7 +154,7 @@ fun DetalleRecetaScreen(
                     // Título Ingredientes
                     item {
                         Text(
-                            text = "Ingredientes",
+                            text = stringResource(R.string.ingredients),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -185,7 +184,7 @@ fun DetalleRecetaScreen(
                     } else {
                         item {
                             Text(
-                                text = "No hay ingredientes disponibles para esta receta.",
+                                text = stringResource(R.string.no_ingredients_available),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -194,10 +193,24 @@ fun DetalleRecetaScreen(
                         }
                     }
 
+                    item {
+                        Button(
+                            onClick = {
+                                anadirIngredientes(*ingredientes.toTypedArray())
+                                Toast.makeText(context, "Ingredientes añadidos a la lista", Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(stringResource(R.string.add_ingredients_to_shopping_list))
+                        }
+                    }
+
                     // Galería de Fotos
                     item {
                         Text(
-                            text = "Galería de Fotos",
+                            text = stringResource(R.string.gallery_pictures),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier
                                 .fillMaxWidth()

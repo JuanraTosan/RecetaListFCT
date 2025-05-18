@@ -33,8 +33,8 @@ fun FastSettings(
     context: Context,
     activity: Activity
 ) {
-    val languages = listOf("es", "en", "fr") // Lista de códigos de idioma
-    val languageNames = listOf("Español", "Inglés", "Francés") // Nombres de idiomas
+    val languages = listOf("es", "en") // Lista de códigos de idioma
+    val languageNames = listOf(stringResource(R.string.spanish), stringResource(R.string.english)) // Nombres de idiomas
 
     var showLanguageMenu by remember { mutableStateOf(false) }
     val darkThemeState = LocalDarkTheme.current
@@ -58,7 +58,7 @@ fun FastSettings(
 
             DropdownMenuItem(
                 text = {
-                    Text(if (darkThemeState.value) "Tema claro" else "Tema oscuro")
+                    Text(if (darkThemeState.value) stringResource(R.string.light_theme) else stringResource(R.string.dark_theme))
                 },
                 trailingIcon = {
                     Switch(

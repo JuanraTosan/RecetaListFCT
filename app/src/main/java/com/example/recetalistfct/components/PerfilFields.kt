@@ -18,6 +18,8 @@ import androidx.compose.ui.semantics.semantics
 import java.util.Calendar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
+import com.example.recetalistfct.R
 
 
 @Composable
@@ -43,7 +45,7 @@ fun FechaNacimientoField(fechaNacimiento: String, onFechaSeleccionada: (String) 
     OutlinedTextField(
         value = fechaNacimiento,
         onValueChange = {},
-        label = { Text("Fecha de nacimiento") },
+        label = { Text(stringResource(R.string.date_of_birth)) },
         readOnly = true,
         modifier = Modifier.fillMaxWidth(0.8f),
         trailingIcon = {
@@ -76,7 +78,7 @@ fun GeneroDropdownField(
             value = generoSeleccionado,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Género") },
+            label = { Text(stringResource(R.string.gender)) },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
