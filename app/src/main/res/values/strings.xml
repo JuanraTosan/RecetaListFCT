@@ -29,7 +29,8 @@
     <string name="replace">Reemplazar</string>
     <string name="cancel">Cancelar</string>
     <string name="no_ingredients_available">No hay ingredientes disponibles para esta receta.</string>
-    <string name="add_ingredients_to_shopping_list">Añadir ingredientes a la lista de la compra</string>
+    <string name="add_ingredients_to_shopping_list"> Seleccionar ingredientes para la lista de la compra</string>
+    <string name="add_all_ingredients_to_shopping_list">Añadir ingredientes a la lista de la compra</string>
     <string name="search_recipe">Buscar receta…</string>
     <string name="recipe_list">Lista de recetas</string>
     <string name="no_recipes_found_with_filters">No se encontraron recetas con esos criterios.</string>
@@ -62,4 +63,12 @@
     <string name="medium">Medio</string>
     <string name="hard">Difícil</string>
     <string name="recipe_detail">Detalle de la Receta</string>
+    <string name="unit_of_measure">Unidad de medida</string>
+    <string name="grams">Gramos</string>
+    <string name="kilograms">Kilogramos</string>
+    <string name="units">Unidades</string>
+    <string name="liters">Litros</string>
+    <string name="tablespoons">Cucharada/s</string>
+    <string name="select_ingredients">Selecciona los ingredientes</string>
+    <string name="confirm">Confirmar</string>
 </resources>

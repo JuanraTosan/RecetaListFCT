@@ -5,8 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -15,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +43,8 @@ fun DetalleRecetaScreen(
     val context = LocalContext.current
     var receta by remember { mutableStateOf<Receta?>(null) }
     var ingredientes by remember { mutableStateOf<List<Ingrediente>>(emptyList()) }
+
+
     var isLoadingIngredients by remember { mutableStateOf(false) }
 
     // Obtener usuario actual
@@ -60,11 +61,7 @@ fun DetalleRecetaScreen(
                 ingredientes = ingredientesList
                 isLoadingIngredients = false
             }
-
-
         }
-
-
     }
 
     Scaffold(
@@ -177,7 +174,7 @@ fun DetalleRecetaScreen(
                     } else if (ingredientes.isNotEmpty()) {
                         items(ingredientes) { ingrediente ->
                             Text(
-                                text = "${ingrediente.nombre} - ${ingrediente.cantidad}",
+                                text = "${ingrediente.nombre} - ${ingrediente.cantidad} (${ingrediente.unidadMedida})",
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                             )
                         }
@@ -196,14 +193,14 @@ fun DetalleRecetaScreen(
                     item {
                         Button(
                             onClick = {
-                                anadirIngredientes(*ingredientes.toTypedArray())
-                                Toast.makeText(context, "Ingredientes añadidos a la lista", Toast.LENGTH_SHORT).show()
+                                    anadirIngredientes(*ingredientes.toTypedArray())
+                                    Toast.makeText(context, "Ingredientes añadidos a la lista", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ) {
-                            Text(stringResource(R.string.add_ingredients_to_shopping_list))
+                            Text(stringResource(R.string.add_all_ingredients_to_shopping_list))
                         }
                     }
 

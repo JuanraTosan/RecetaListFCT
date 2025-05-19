@@ -1,4 +1,3 @@
-// view/screens/CrearEditarRecetaScreen.kt
 package com.example.recetalistfct.view
 
 import android.net.Uri
@@ -43,6 +42,7 @@ import com.example.recetalistfct.model.Receta
 import com.google.firebase.auth.FirebaseAuth
 import java.util.UUID
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrearEditarRecetaScreen(
@@ -66,15 +66,19 @@ fun CrearEditarRecetaScreen(
     var dificultad by rememberSaveable { mutableStateOf("") }
     var tiempoPreparacion by rememberSaveable { mutableStateOf("") }
 
-    var ingredientes by rememberSaveable { mutableStateOf(mutableListOf<Ingrediente>()) }
+    var ingredientes by remember { mutableStateOf(mutableListOf<Ingrediente>()) }
+
     var nombreIngrediente by rememberSaveable { mutableStateOf("") }
     var cantidadIngrediente by rememberSaveable { mutableStateOf("") }
+    var unidadMedida by rememberSaveable { mutableStateOf("") }
 
     var showReplaceDialog by rememberSaveable { mutableStateOf(false) }
     var ingredienteDuplicado by rememberSaveable { mutableStateOf<Ingrediente?>(null) }
 
     var expandedTipo by remember { mutableStateOf(false) }
     var expandedDificultad by remember { mutableStateOf(false) }
+    var expandedUnidadMedida by remember { mutableStateOf(false) }
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -266,58 +270,114 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(16.dp))
 
-
+            // Ingredientes
             Text(stringResource(R.string.ingredients), style = MaterialTheme.typography.titleMedium)
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Fila 1: nombre del ingrediente y cantidad:
+                    OutlinedTextField(
+                        value = nombreIngrediente,
+                        onValueChange = { nombreIngrediente = it },
+                        label = { Text(stringResource(R.string.name)) },
+                        modifier = Modifier.weight(0.6f)
+                    )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = nombreIngrediente,
-                    onValueChange = { nombreIngrediente = it },
-                    label = { Text(stringResource(R.string.name)) },
-                    modifier = Modifier.weight(1f)
-                )
+                    // Campo cantidad
+                    OutlinedTextField(
+                        value = cantidadIngrediente,
+                        onValueChange = { cantidadIngrediente = it },
+                        label = { Text(stringResource(R.string.amount)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(0.3f)
+                    )
+                }
 
-                Spacer(Modifier.width(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = cantidadIngrediente,
-                    onValueChange = { cantidadIngrediente = it },
-                    label = { Text(stringResource(R.string.amount)) },
-                    modifier = Modifier.weight(1f)
-                )
-
-                Spacer(Modifier.width(8.dp))
-
-                Button(onClick = {
-                    if (nombreIngrediente.isNotBlank() && cantidadIngrediente.isNotBlank()) {
-                        val existe = ingredientes.any { it.nombre.equals(nombreIngrediente, ignoreCase = true) }
-
-
-                        if (!existe) {
-                            val nuevoIngrediente = Ingrediente(
-                                id = UUID.randomUUID().toString(),
-                                nombre = nombreIngrediente,
-                                cantidad = cantidadIngrediente,
-                                recetaIds = listOfNotNull(recetaId)
-                            )
-                            ingredientes.add(nuevoIngrediente)
-                            nombreIngrediente = ""
-                            cantidadIngrediente = ""
-                        } else {
-                            ingredienteDuplicado = Ingrediente(
-                                id = UUID.randomUUID().toString(),
-                                nombre = nombreIngrediente,
-                                cantidad = cantidadIngrediente,
-                                recetaIds = listOfNotNull(recetaId)
-                            )
-                            showReplaceDialog = true
+                // Fila 2: Unidad de Medida y Botón +
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Selector de unidad de medida
+                    ExposedDropdownMenuBox(
+                        expanded = expandedUnidadMedida,
+                        onExpandedChange = { expandedUnidadMedida = !expandedUnidadMedida },
+                        modifier = Modifier.weight(0.7f)
+                    ) {
+                        OutlinedTextField(
+                            value = unidadMedida,
+                            onValueChange = {},
+                            label = { Text(stringResource(R.string.unit_of_measure)) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnidadMedida) },
+                            readOnly = true,
+                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedUnidadMedida,
+                            onDismissRequest = { expandedUnidadMedida = false }
+                        ) {
+                            listOf(
+                                stringResource(R.string.grams),
+                                stringResource(R.string.kilograms),
+                                stringResource(R.string.units),
+                                stringResource(R.string.liters),
+                                stringResource(R.string.tablespoons)
+                            ).forEach { item ->
+                                DropdownMenuItem(
+                                    text = { Text(item) },
+                                    onClick = {
+                                        unidadMedida = item
+                                        expandedUnidadMedida = false
+                                    }
+                                )
+                            }
                         }
                     }
-                }) {
-                    Icon(Icons.Default.Add, contentDescription = "Añadir ingrediente")
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Botón Añadir Ingrediente
+                    Button(
+                        onClick = {
+                            if (nombreIngrediente.isNotBlank() && cantidadIngrediente.isNotBlank()) {
+                                val existe = ingredientes.any {
+                                    it.nombre.equals(
+                                        nombreIngrediente,
+                                        ignoreCase = true
+                                    )
+                                }
+
+                                if (!existe) {
+                                    val nuevoIngrediente = Ingrediente(
+                                        id = UUID.randomUUID().toString(),
+                                        nombre = nombreIngrediente,
+                                        cantidad = cantidadIngrediente,
+                                        recetaIds = listOfNotNull(recetaId),
+                                        unidadMedida = unidadMedida
+                                    )
+                                    ingredientes.add(nuevoIngrediente)
+                                    nombreIngrediente = ""
+                                    cantidadIngrediente = ""
+                                    unidadMedida = ""
+                                } else {
+                                    ingredienteDuplicado = Ingrediente(
+                                        id = UUID.randomUUID().toString(),
+                                        nombre = nombreIngrediente,
+                                        cantidad = cantidadIngrediente,
+                                        recetaIds = listOfNotNull(recetaId),
+                                        unidadMedida = unidadMedida
+                                    )
+                                    showReplaceDialog = true
+                                }
+                            }
+                        },
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Añadir ingrediente")
+                    }
                 }
             }
 
@@ -331,7 +391,7 @@ fun CrearEditarRecetaScreen(
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                 ) {
-                    Text("• ${ingrediente.nombre} - ${ingrediente.cantidad}", modifier = Modifier.weight(1f))
+                    Text("• ${ingrediente.nombre} - ${ingrediente.cantidad} (${ingrediente.unidadMedida})", modifier = Modifier.weight(1f))
                     IconButton(onClick = {
                         IngredienteController.eliminarIngrediente(ingrediente.id) { success ->
                             if (success) {
@@ -463,6 +523,15 @@ fun CrearEditarRecetaScreen(
 
                                         ingredientesConReceta.forEach { ingredienteActualizado ->
                                             IngredienteController.guardarIngrediente(ingredienteActualizado) {}
+                                        }
+                                    } else {
+                                        // Modo creación: guardar ingredientes con nuevo ID y vincular a la nueva receta
+                                        val ingredientesConReceta = ingredientes.map { ingrediente ->
+                                            ingrediente.copy(id = UUID.randomUUID().toString(), recetaIds = listOf(receta.id))
+                                        }
+
+                                        ingredientesConReceta.forEach { ingrediente ->
+                                            IngredienteController.guardarIngrediente(ingrediente) {}
                                         }
                                     }
                                 }

@@ -1,6 +1,5 @@
 package com.example.recetalistfct.view
 
-import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -80,7 +79,7 @@ fun CarritoScreen(navController: NavController) {
                                     modifier = Modifier.padding(end = 8.dp)
                                 )
                                 Text(
-                                    text = "${ing.nombre} (${ing.cantidad})",
+                                    text = "${ing.nombre} - ${ing.cantidad} (${ing.unidadMedida})",
                                     style = MaterialTheme.typography.titleMedium
                                 )
                             }

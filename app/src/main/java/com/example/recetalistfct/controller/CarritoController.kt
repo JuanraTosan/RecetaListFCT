@@ -8,6 +8,7 @@ import com.example.recetalistfct.model.Ingrediente
 import com.example.recetalistfct.model.ListaCompras
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.util.UUID
 
 
 object CarritoController {
@@ -84,10 +85,24 @@ object CarritoController {
         guardarCambios()
     }
 
+
+
     fun anadirIngredientes(vararg nuevos: Ingrediente) {
         ingredientes.addAll(nuevos)
         guardarCambios()
     }
+
+
+/*
+    fun anadirIngredientes(vararg nuevos: Ingrediente) {
+        for (ing in nuevos) {
+            val existe = ingredientes.any { it.nombre.equals(ing.nombre, ignoreCase = true) }
+            if (!existe) {
+                ingredientes.add(ing.copy(id = UUID.randomUUID().toString(), comprado = false))
+            }
+        }
+        guardarCambios()
+    }*/
 
     fun guardarCambios() {
         if (currentUid.isBlank()) return

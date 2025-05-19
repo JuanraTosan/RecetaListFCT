@@ -30,7 +30,8 @@
     <string name="replace">Replace</string>
     <string name="cancel">Cancel</string>
     <string name="no_ingredients_available">There are no ingredients available for this recipe.</string>
-    <string name="add_ingredients_to_shopping_list">Add ingredients to shopping list</string>
+    <string name="add_ingredients_to_shopping_list">Selecting ingredients for the shopping list</string>
+    <string name="add_all_ingredients_to_shopping_list">Add ingredients to shopping list</string>
     <string name="search_recipe">Search recipe…</string>
     <string name="recipe_list">Recipe list</string>
     <string name="no_recipes_found_with_filters">No recipes found with these filters.</string>
@@ -63,4 +64,12 @@
     <string name="medium">Medium</string>
     <string name="hard">Hard</string>
     <string name="recipe_detail">"Recipe Details "</string>
+    <string name="unit_of_measure">Unit of measure</string>
+    <string name="grams">Grams</string>
+    <string name="kilograms">Kilograms</string>
+    <string name="units">Units</string>
+    <string name="liters">Liters</string>
+    <string name="tablespoons">tablespoon/s</string>
+    <string name="select_ingredients">Select the ingredients</string>
+    <string name="confirm">Confirm</string>
 </resources>
