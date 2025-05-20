@@ -93,16 +93,9 @@ object CarritoController {
     }
 
 
-/*
-    fun anadirIngredientes(vararg nuevos: Ingrediente) {
-        for (ing in nuevos) {
-            val existe = ingredientes.any { it.nombre.equals(ing.nombre, ignoreCase = true) }
-            if (!existe) {
-                ingredientes.add(ing.copy(id = UUID.randomUUID().toString(), comprado = false))
-            }
-        }
-        guardarCambios()
-    }*/
+    fun limpiarIngredientes() {
+        ingredientes.clear()
+    }
 
     fun guardarCambios() {
         if (currentUid.isBlank()) return

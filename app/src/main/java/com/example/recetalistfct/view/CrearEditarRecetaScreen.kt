@@ -80,6 +80,7 @@ fun CrearEditarRecetaScreen(
     var expandedUnidadMedida by remember { mutableStateOf(false) }
 
 
+    //launcher para seleccionar una imagen:
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> imagenUri = uri }
@@ -97,9 +98,7 @@ fun CrearEditarRecetaScreen(
                     Log.d("CrearRecetaScreen", "Receta encontrada: ${receta.nombre}")
                     nombre = receta.nombre
                     descripcion = receta.descripcion
-                    //foto principal
                     fotoUrl = receta.fotoReceta
-                    //fotos de galeria
                     fotoUrls = receta.fotosGaleriaReceta
 
                     //limpiar cualquier seleccion previa de nueva imagen

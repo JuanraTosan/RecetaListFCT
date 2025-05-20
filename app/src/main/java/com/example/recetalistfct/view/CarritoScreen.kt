@@ -1,5 +1,6 @@
 package com.example.recetalistfct.view
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,12 +31,18 @@ fun CarritoScreen(navController: NavController) {
     var ingredientes by remember { mutableStateOf(CarritoController.ingredientes) }
 
 
+    Log.d("Userid","$userId")
     // Recarga la lista cuando el usuario cambia
     LaunchedEffect(userId.value) {
         if (userId.value != null) {
+            CarritoController.limpiarIngredientes()
             cargarListaComprasDeUsuario(userId.value!!) {
                 lista = it
+                ingredientes = CarritoController.ingredientes
             }
+        }else{
+            //Si no hay usuario.
+            CarritoController.limpiarIngredientes()
         }
     }
 
