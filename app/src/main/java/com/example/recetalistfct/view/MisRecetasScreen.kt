@@ -29,6 +29,19 @@ import com.example.recetalistfct.controller.RecetaController.eliminarReceta
 import com.example.recetalistfct.controller.RecetaController.obtenerRecetasDeUsuario
 import com.google.firebase.auth.FirebaseAuth
 
+
+/**
+ * Pantalla que muestra recetas creadas por el usuario actual.
+ *
+ * Caracteristicas:
+ * - Lista desplazable de recetas
+ * - Acceso rápido a edición al pulsar en una receta
+ * - Eliminar una receta al deslizar hacia la izuierda.
+ * - Botón para crear nuevas recetas.
+ * - Confirmación antes de eliminar una receta.
+ *
+ * @param navController Controlador de navegación para cambiar entre pantallas.
+ */
 @Composable
 fun MisRecetasScreen(navController: NavController) {
     val context = LocalContext.current
@@ -38,6 +51,10 @@ fun MisRecetasScreen(navController: NavController) {
     var recetaAEliminar by remember { mutableStateOf<Receta?>(null) }
     val offsetMap = remember { mutableStateMapOf<String, Float>() }
 
+    /**
+     * Carga todas las recetas asociadas al usuario actual desde Firebase.
+     * Se ejecuta al iniciar la pantalla.
+     */
     obtenerRecetasDeUsuario(uid) { recetasCargadas ->
             recetas = recetasCargadas.sortedByDescending { it.fechaCreacion }
         }
@@ -53,15 +70,18 @@ fun MisRecetasScreen(navController: NavController) {
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
+                //Titulo de la pantalla
                 Text(stringResource(R.string.my_recipes), style = MaterialTheme.typography.headlineMedium)
 
                 Spacer(Modifier.height(16.dp))
 
+                //Lista vertical de recetas usando LazyColumn
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(recetas, key = { it.id }) { receta ->
+                        //Animación suave de desplazamiento horizontal
                         val offsetX by animateDpAsState(
                             targetValue = (offsetMap[receta.id] ?: 0f).dp,
                             label = "offset"
@@ -91,6 +111,7 @@ fun MisRecetasScreen(navController: NavController) {
                                     )
                                 }
                         ) {
+                            //Tarjeta individual de receta
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -100,6 +121,7 @@ fun MisRecetasScreen(navController: NavController) {
                                 onClick = { navController.navigate("crearRecetas/${receta.id}") }
                             ) {
                                 Box {
+                                    //Imagen principal de la receta
                                     Image(
                                         painter = rememberAsyncImagePainter(receta.fotoReceta),
                                         contentDescription = receta.nombre,
@@ -107,12 +129,14 @@ fun MisRecetasScreen(navController: NavController) {
                                         contentScale = ContentScale.Crop
                                     )
 
+                                    //Capa roja semi-transparente que aparece al deslizar receta para eliminar
                                     val alpha = ((-(offsetMap[receta.id] ?: 0f)) / 300f).coerceIn(0f, 1f)
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .background(Color.Red.copy(alpha = alpha))
                                     )
+                                    //Nombre de la receta en la parte inferior
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -132,6 +156,7 @@ fun MisRecetasScreen(navController: NavController) {
                     }
                 }
 
+                //Botón para crear nueva receta
                 Button(
                     onClick = { navController.navigate("crearRecetas") },
                     modifier = Modifier
@@ -142,6 +167,7 @@ fun MisRecetasScreen(navController: NavController) {
                 }
             }
 
+            //Diálogo de confirmación de eliminación (si hay una receta seleccionada)
             recetaAEliminar?.let { receta ->
                 ConfirmDeleteDialog(
                     recetaNombre = receta.nombre,

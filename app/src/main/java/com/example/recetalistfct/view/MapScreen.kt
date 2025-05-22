@@ -13,28 +13,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.example.recetalistfct.components.BottomBar
+import com.example.recetalistfct.components.MyGoogleMaps
 import com.example.recetalistfct.components.PlacesCardList
 import com.example.recetalistfct.controller.PlaceController.rememberPlaces
-import com.example.recetalistfct.model.Place
 import com.example.recetalistfct.utils.getCurrentLocation
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
 
+/**
+ * Pantalla principal del mapa.
+ *
+ * Muestra:
+ * - Un mapa interactivo centrado en la ubicación actual del usuario.
+ * - Marcadores de lugares predefinidos o guardados.
+ * - Una lista de tarjetas con información de los lugares disponibles.
+ *
+ * Requiere permiso de ubicación para funcionar correctamente.
+ *
+ * @param navController Controlador de navegación para cambiar entre pantallas.
+ */
 @Composable
 fun MapScreen(navController: NavController) {
     val context = LocalContext.current
     var currentLocation by remember { mutableStateOf<LatLng?>(null) }
     var cameraPosition by remember { mutableStateOf<CameraPosition?>(null) }
 
-    // Estado para posición del marcador del mapa
+    // Lista de lugares (sitios predefinidos o guardados por el usuario)
     val places = rememberPlaces()
 
-    // Para manejar el lanzamiento del permiso
+    // Launcher para solicitar permiso de ubicación al usuario
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -44,12 +51,15 @@ fun MapScreen(navController: NavController) {
                 currentLocation = LatLng(lat, lon)
             }
         } else {
-            // Permiso denegado
+            // Permiso denegado, se muestra mensaje de error
             Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Pide el permiso si no está concedido
+    /**
+     * Solicita el permiso de ubicación cuando se entra a esta pantalla.
+     * Se ejecuta una única vez gracias a 'LaunchedEffect(Unit)'
+     */
     LaunchedEffect(Unit) {
         permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
@@ -64,6 +74,7 @@ fun MapScreen(navController: NavController) {
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            //Zona superior: Mapa interactivo
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -80,6 +91,7 @@ fun MapScreen(navController: NavController) {
                 }
             }
 
+            //Zona inferior: Lista de lugares como tarjetas desplezables
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -88,6 +100,7 @@ fun MapScreen(navController: NavController) {
             ) {
                 if (places.isNotEmpty()) {
                     PlacesCardList(places = places) { latLng ->
+                        //Al pulsar en una tarjeta, mueve la cámara del mapa a esa ubicación
                         cameraPosition = CameraPosition.fromLatLngZoom(latLng, 15f)
                     }
                 } else {
@@ -98,39 +111,4 @@ fun MapScreen(navController: NavController) {
     }
 }
 
-@Composable
-fun MyGoogleMaps(
-    location: LatLng,
-    places: List<Place>,
-    cameraPosition: CameraPosition?
-){
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 15f)
-    }
 
-    // Cambia la cámara si se selecciona un lugar
-    if (cameraPosition != null) {
-        cameraPositionState.position = cameraPosition
-    }
-
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState,
-        uiSettings = MapUiSettings(zoomControlsEnabled = false)
-    ) {
-        // Marcador de mi ubicación
-        Marker(
-            state = MarkerState(position = location)
-        ) {
-            it.title = "Mi ubicación"
-        }
-
-        // Marcadores de los lugares guardados
-        places.forEach { place ->
-            Marker(
-                state = MarkerState(position = LatLng(place.lat, place.lon)),
-                title = place.name
-            )
-        }
-    }
-}

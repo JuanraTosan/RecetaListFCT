@@ -42,7 +42,17 @@ import com.example.recetalistfct.model.Receta
 import com.google.firebase.auth.FirebaseAuth
 import java.util.UUID
 
-
+/**
+ * Pantalla para crear o editar una receta.
+ *
+ * Permite al usuario:
+ * - Introducir nombre, descripción, tipo, dificultad y tiempo de preparación.
+ * - Seleccionar imagen principal y fotos adicionales.
+ * - Añadir o eliminar ingredientes asociados a la receta.
+ *
+ * @param navController Controlador de navegación de Jetpack Compose para volver a pantalla anterior.
+ * @param recetaId ID opcional de la receta a editar. Si es null, se crea una nueva.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrearEditarRecetaScreen(
@@ -75,22 +85,26 @@ fun CrearEditarRecetaScreen(
     var showReplaceDialog by rememberSaveable { mutableStateOf(false) }
     var ingredienteDuplicado by rememberSaveable { mutableStateOf<Ingrediente?>(null) }
 
+    //Estados para abrir/cerrar los menús expandidos (Dropdowns)
     var expandedTipo by remember { mutableStateOf(false) }
     var expandedDificultad by remember { mutableStateOf(false) }
     var expandedUnidadMedida by remember { mutableStateOf(false) }
 
 
-    //launcher para seleccionar una imagen:
+    //launcher para seleccionar una imagen desde la galeria:
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> imagenUri = uri }
 
-    // Launcher para seleccionar múltiples imágenes
+    // Launcher para seleccionar múltiples imágenes para la galería:
     val multipleImagesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris -> fotosGaleria = uris }// Actualizamos la lista con las fotos seleccionadas
 
-    // Cargar datos si estamos editando
+    /**
+     * Carga los datos de la receta si estamos en modo edición.
+     * Recupera info desde Firebase usando el ID recibido.
+     */
     LaunchedEffect(recetaId) {
         if (recetaId != null) {
             obtenerRecetaPorId(recetaId) { receta ->
@@ -104,7 +118,6 @@ fun CrearEditarRecetaScreen(
                     //limpiar cualquier seleccion previa de nueva imagen
                     imagenUri = null
                     fotosGaleria = emptyList() // Esto podría sobreescribir imágenes nuevas
-
                     tipoComida = receta.tipoComida
                     dificultad = receta.dificultad
                     tiempoPreparacion = receta.tiempoPreparacionMin.toString()
@@ -126,7 +139,7 @@ fun CrearEditarRecetaScreen(
             .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título dinámico
+            // Título dinámico según si es Creación o edición
             Text(
                 stringResource(id = if (recetaId == null) R.string.create_recipe else R.string.edit_recipe),
                 style = MaterialTheme.typography.headlineMedium,
@@ -134,12 +147,12 @@ fun CrearEditarRecetaScreen(
             )
             Spacer(Modifier.height(16.dp))
 
-            //Imagen principal receta:
+            //Selector de imagen principal de la receta
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(1f) // Ocupa el 95% del ancho
+                    .fillMaxWidth(1f)
                     .height(300.dp)
-                    .clip(RoundedCornerShape(8.dp)) // Cuadrado con esquinas ligeramente redondeadas
+                    .clip(RoundedCornerShape(8.dp))
                     .border(
                         width = 2.dp,
                         color = MaterialTheme.colorScheme.outline,
@@ -181,6 +194,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(20.dp))
 
+            //Campo para introducir el nombre de la receta:
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
@@ -190,6 +204,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(10.dp))
 
+            //Campo para introducir la descripción:
             OutlinedTextField(
                 value = descripcion,
                 onValueChange = { descripcion = it },
@@ -199,7 +214,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            // Tipo de comida
+            // Menú expandido para seleccionar tipo de comida
             ExposedDropdownMenuBox(
                 expanded = expandedTipo,
                 onExpandedChange = {expandedTipo = !expandedTipo},
@@ -228,7 +243,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            // Dificultad
+            // Menú expandido para seleccionar dificultad
             ExposedDropdownMenuBox(
                 expanded = expandedDificultad,
                 onExpandedChange = {expandedDificultad = !expandedDificultad},
@@ -258,7 +273,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Tiempo de preparación
+            // Campo para introducir el tiempo de preparación
             OutlinedTextField(
                 value = tiempoPreparacion,
                 onValueChange = { tiempoPreparacion = it },
@@ -271,6 +286,8 @@ fun CrearEditarRecetaScreen(
 
             // Ingredientes
             Text(stringResource(R.string.ingredients), style = MaterialTheme.typography.titleMedium)
+
+            //Campos para añadir nuevos ingredientes
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -296,7 +313,7 @@ fun CrearEditarRecetaScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Fila 2: Unidad de Medida y Botón +
+                // Fila 2: Unidad de medida y Botón para añadir
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
@@ -382,7 +399,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(8.dp))
 
-// Mostrar ingredientes añadidos
+            // Lista de ingredientes añadidos
             ingredientes.forEachIndexed { index, ingrediente ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -405,12 +422,11 @@ fun CrearEditarRecetaScreen(
                 }
             }
 
-            // Mostrar fotos de la galería como un carrusel horizontal
             Spacer(Modifier.height(16.dp))
-            Text(stringResource(R.string.gallery_pictures), style = MaterialTheme.typography.titleMedium)
 
+            //Galeria de fotos previas y nuevas
+            Text(stringResource(R.string.gallery_pictures), style = MaterialTheme.typography.titleMedium)
             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                // Mostrar fotos previamente subidas
                 fotoUrls.forEach { url ->
                     Box(
                         modifier = Modifier
@@ -427,8 +443,6 @@ fun CrearEditarRecetaScreen(
                         )
                     }
                 }
-
-                // Mostrar nuevas fotos seleccionadas
                 fotosGaleria.forEach { uri ->
                     Box(
                         modifier = Modifier
@@ -449,6 +463,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            //Botón para añadir fotos a la galería
             Button(
                 onClick = { multipleImagesLauncher.launch("image/*") },
                 modifier = Modifier.fillMaxWidth()
@@ -458,7 +473,7 @@ fun CrearEditarRecetaScreen(
 
             Spacer(Modifier.height(24.dp))
 
-
+            //Botón para guardar o actualizar la receta
             Button(
                 onClick = {
                     if (nombre.isNotBlank() && descripcion.isNotBlank() && imagenUri != null || fotoUrl.isNotBlank()) {
@@ -601,7 +616,7 @@ fun CrearEditarRecetaScreen(
             }
         }
 
-        // Diálogo de reemplazo
+        // Diálogo para reemplazar ingrediente duplicado
         if (showReplaceDialog && ingredienteDuplicado != null) {
             AlertDialog(
                 onDismissRequest = { showReplaceDialog = false },

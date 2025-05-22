@@ -20,13 +20,28 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 
+/**
+ * Controlador para gestionar operaciones relacionadas con lugares (`Place`).
+ *
+ * Incluye:
+ * - Carga de lugares desde Firebase Realtime Database.
+ * - Componente reutilizable para mostrar una valoración en forma de estrellas.
+ */
 object PlaceController {
 
+    /**
+     * Función composable que devuelve una lista observable de lugares ('Place') cargada desde Firebase.
+     *
+     * Se actualiza automáticamente cuando los datos cambian en la base de datos.
+     *
+     * @return Lista mutable de objetos 'Place'.
+     */
     @Composable
     fun rememberPlaces(): List<Place> {
         val places = remember { mutableStateListOf<Place>() }
         val context = LocalContext.current
 
+        //Cargar lugares desde Firebase al inicializar
         LaunchedEffect(Unit) {
             val database = Firebase.database
             val placesRef = database.getReference("place")
@@ -49,7 +64,16 @@ object PlaceController {
         return places
     }
 
-
+    /**
+     * Componente composable para mostrar una valoración en formato de estrellas.
+     *
+     * Muestra:
+     * - Estrellas completas (⭐️)
+     * - Una media estrella opcional (½)
+     * - Estrellas vacías (☆)
+     *
+     * @param rating Valor de la valoración entre 0.0 y 5.0
+     */
     @Composable
     fun RatingStars(rating: Double) {
         Row {

@@ -28,24 +28,45 @@ import com.example.recetalistfct.R
 import com.example.recetalistfct.controller.UsuarioController
 import com.example.recetalistfct.session.UserSessionManager
 
+/**
+ * Pantalla de inicio de sesión.
+ *
+ * Permite al usuario:
+ * - Introducir su correo electrónico y contraseña
+ * - Iniciar sesión o navegar a la pantalla de registro si no tiene cuenta.
+ * - Mantener los datos introducidos frente a rotaciones de pantalla gracias a 'rememberSaveable'.
+ *
+ * @param navController Controlador de navegación para cambiar a entre pantallas.
+ */
 @Composable
 fun LoginScreen(
     navController: NavController
 ) {
+    //Campos de texto para email y contraseña
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+
+    //Estado para mostrar mensajes de error
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
+    //Detecta si el dispositivo está en modo horizontal(landscape)
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
+
+    /**
+     * Capa principal de la pantalla con:
+     * - Fondo degradado.
+     * - Detección de toques para limpiar el foco del teclado
+     * - Imagen de logo semi-transparente centrada.
+     */
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding() // Se asegura de que el teclado no tape la UI
+            .imePadding() // Evita que el teclado tape la UI
             .pointerInput(Unit){
                 detectTapGestures ( onTap = {
                     focusManager.clearFocus()
@@ -60,7 +81,7 @@ fun LoginScreen(
                 )
             )
     ) {
-        // Imagen del logo
+        // Logo de la aplicación con tamaño adaptativo según orientación
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
@@ -81,6 +102,7 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
+            //Titulo de la pantalla
             Text(
                 text = stringResource(R.string.login),
                 style = MaterialTheme.typography.titleLarge,
@@ -126,6 +148,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            //Mostrar mensaje de error si lo hay
             errorMessage?.let {
                 Text(
                     text = it,
@@ -136,6 +159,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            //Botón de iniciar sesión
             Button(
                 onClick = {
                     if (email.isNotBlank() && password.isNotBlank()){
@@ -169,6 +193,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            //Botón para  navegar a la pantalla de registro
             TextButton(onClick = { navController.navigate("register") }) {
                 Text(stringResource(R.string.dont_have_account_register))
             }

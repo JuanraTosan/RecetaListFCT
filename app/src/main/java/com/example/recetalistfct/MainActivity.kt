@@ -26,10 +26,14 @@ import com.example.recetalistfct.view.MapScreen
 import com.example.recetalistfct.view.MisRecetasScreen
 import com.example.recetalistfct.view.PerfilScreen
 import com.example.recetalistfct.view.RegistroScreen
-//import com.google.android.libraries.places.api.Places
 import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Actividad principal de la aplicación.
+ *
+ * Inicializa Firebase, aplica configuraciones iniciales (idioma, tema oscuro),
+ * y establece la navegación entre pantallas usando Jetpack Compose y Jetpack Navigation
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,20 +44,24 @@ class MainActivity : ComponentActivity() {
             Log.e("Firebase", "Firebase NO está inicializado.")
         }
 
-        //Guardar el idioma seleccionado
+        //Aplicar idioma guardado
         val savedLang = getSavedLanguage(this)
         changeLanguage(this, savedLang)
 
-        //Aqui se recupera el modo oscuro
+        //Recuperar preferencia de tema oscuro
         val savedDarkMode = getSavedThemePreference(this)
 
+        //Inicializar sesión del usuario
         UserSessionManager.init(this)
 
-
+        //Habilitar modo Edge-to-Edge (Sin barras negras en dispositivos modernos)
         enableEdgeToEdge()
 
+        //Configurar contenido de la UI con Compose
         setContent {
             val darkThemeState = remember { mutableStateOf(savedDarkMode) }
+
+            //Aplicar tema personalizado con soporte para modo oscuro
             RecetaListFCTTheme(useDarkTheme = darkThemeState.value) {
                 val navController = rememberNavController()
 
@@ -63,10 +71,19 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+/**
+ * Punto de entrada principal de la aplicación.
+ *
+ * Define las rutas de navegación entre pantallas.
+ *
+ * @param navController Controlador de navegación para gestionar las transiciones entre pantallas.
+ */
 @Composable
 fun MainScreen(
     navController: NavHostController
 ){
+    //Pantalla inicial según si hay un usuario autenticado
     val startDestination = if (UserSessionManager.isUserLoggedIn()) "home" else "login"
 
     NavHost(navController = navController, startDestination = startDestination){

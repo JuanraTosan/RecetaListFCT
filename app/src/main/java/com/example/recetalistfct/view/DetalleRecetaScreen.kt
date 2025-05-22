@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +33,20 @@ import com.example.recetalistfct.model.Receta
 import com.google.firebase.auth.FirebaseAuth
 
 
+/**
+ * Pantalla de detalle de una receta.
+ *
+ * Muestra información detallada sobre la receta seleccionada,
+ * -Nombre y descripción
+ * -Imagen principal y galería de fotos
+ * -Lista de ingredientes necesarios
+ * -Botón para añadir todos los ingredientes al carrito
+ *
+ * Si el usuario es el propietario de la receta, se muestra un botón para editarla.
+ *
+ * @param navController Controlador de navegación para navegar entre pantallas.
+ * @param recetaId ID único de la receta a mostrar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleRecetaScreen(
@@ -44,14 +57,16 @@ fun DetalleRecetaScreen(
     var receta by remember { mutableStateOf<Receta?>(null) }
     var ingredientes by remember { mutableStateOf<List<Ingrediente>>(emptyList()) }
 
-
     var isLoadingIngredients by remember { mutableStateOf(false) }
 
-    // Obtener usuario actual
+    // Obtener datos del usuario actual desde Firebase Authentication
     val firebaseUser = FirebaseAuth.getInstance().currentUser
     val currentUserId = firebaseUser?.uid
 
-    // Cargar receta y sus ingredientes
+    /**
+     * Carga la receta y sus ingredientes cuando cambia el ID
+     * Se ejecuta automáticamente al abrir la pantalla.
+     */
     LaunchedEffect(recetaId) {
         isLoadingIngredients = true
         obtenerRecetaPorId(recetaId) { recetaData ->
@@ -68,7 +83,9 @@ fun DetalleRecetaScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.recipe_detail)) },
-                actions = {if (currentUserId == receta?.usuarioId) {
+                actions = {
+                    //Mostrar botón de edición solo si el usuario es el creador de la receta.
+                    if (currentUserId == receta?.usuarioId) {
                     IconButton(
                         onClick = {
                             receta?.id?.let {
@@ -91,7 +108,7 @@ fun DetalleRecetaScreen(
         },
         content = { paddingValues ->
 
-
+            //Si no hay receta cargada aún, mostrar un indicador de carga
             if (receta == null) {
                 Box(
                     modifier = Modifier
@@ -110,7 +127,7 @@ fun DetalleRecetaScreen(
                         .padding(paddingValues)
                 ) {
 
-                    // Imagen principal
+                    // Item 1: Imagen principal de la receta
                     item {
                         val fotoPrincipal = recetaData.fotoReceta
                         Image(
@@ -126,7 +143,7 @@ fun DetalleRecetaScreen(
                         )
                     }
 
-                    // Nombre
+                    // Item 2: Nombre de la receta
                     item {
                         Text(
                             text = recetaData.nombre,
@@ -137,7 +154,7 @@ fun DetalleRecetaScreen(
                         )
                     }
 
-                    // Descripción
+                    // Item 3: Descripción de la receta
                     item {
                         Text(
                             text = recetaData.descripcion,
@@ -148,7 +165,7 @@ fun DetalleRecetaScreen(
                         )
                     }
 
-                    // Título Ingredientes
+                    // Item 4:  Título de la seccion de ingredientes de la receta
                     item {
                         Text(
                             text = stringResource(R.string.ingredients),
@@ -159,7 +176,7 @@ fun DetalleRecetaScreen(
                         )
                     }
 
-                    // Estado de carga / lista de ingredientes
+                    //Item 5: Mostrar estado de carga o listaa de ingredientes
                     if (isLoadingIngredients) {
                         item {
                             Box(
@@ -190,6 +207,7 @@ fun DetalleRecetaScreen(
                         }
                     }
 
+                    //Item 6: Botón para añadir todos los ingredientes al carrito
                     item {
                         Button(
                             onClick = {
@@ -204,7 +222,7 @@ fun DetalleRecetaScreen(
                         }
                     }
 
-                    // Galería de Fotos
+                    //Item 7: Galería de fotos adicionales de la receta
                     item {
                         Text(
                             text = stringResource(R.string.gallery_pictures),

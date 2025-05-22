@@ -39,6 +39,18 @@ import com.example.recetalistfct.model.Receta
 import com.example.recetalistfct.model.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Pantalla principal de la aplicación
+ *
+ * Muestra:
+ * - Un buscador para encontrar recetas por nombre.
+ * - Una lista de recetas organizadas por fecha de creación. (filtrables por Tipo, dificultado y tiempo de preparación)
+ * - Botón de perfil y menú rápido de configuración.
+ *
+ * Incluye navegación mediante un BottomBar y soporte para filtrado interactivo.
+ *
+ * @param navController Controlador de navegación para cambiar entre pantallas.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
@@ -66,14 +78,19 @@ fun HomeScreen(navController: NavHostController) {
 
     val focusManager = LocalFocusManager.current
 
-    // Detectar el estado del teclado
+    // Detectar si el teclado virtual está visible
     val imeVisible = LocalDensity.current.density < 0.5
+
+    //Ruta actual en la navegación
     val currentDestination =
         navController.currentBackStackEntryAsState().value?.destination?.route ?: "home"
 
+    //Estado para abrir/cerrar el menú rapido de ajustes
     val expanded = remember { mutableStateOf(false) }
+
     val context = LocalContext.current
 
+    //Si no hay usuario autenticado, muestra mensaje de error y termina
     if (userId == null) {
         Log.w("HomeScreen", "Usuario no autenticado.")
         Box(
@@ -87,6 +104,9 @@ fun HomeScreen(navController: NavHostController) {
 
     Log.d("HomeScreen", "Id de usuario $userId")
 
+    /**
+     * Carga los datos del usuario y todas las recetas disponibles cuando cambia el ID del usuario.
+     */
     LaunchedEffect(userId) {
         obtenerUsuario(userId) { fetchedUser ->
             fetchedUser?.let {
@@ -94,13 +114,14 @@ fun HomeScreen(navController: NavHostController) {
                 fotoPerfil = it.fotoPerfil
             }
         }
-
         obtenerTodasLasRecetas { todasRecetas ->
             recetas.clear()
             recetas.addAll(todasRecetas.sortedByDescending { it.fechaCreacion })
             cargando.value = false
         }
     }
+
+    //Componente de menú de ajustes rápidos
     FastSettings(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false },
@@ -109,6 +130,7 @@ fun HomeScreen(navController: NavHostController) {
         activity = activity
     )
 
+    //Capa principal con detección de toques para limpiar el foco del teclado
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -227,7 +249,7 @@ fun HomeScreen(navController: NavHostController) {
                             }
                         }
 
-                        // Menú desplegable de filtros
+                        // Mostrar filtros si el usuario pulsa el icono desplegable
                         if (mostrarFiltros) {
                             FiltrosReceta(
                                 navController = navController,
@@ -272,6 +294,7 @@ fun HomeScreen(navController: NavHostController) {
                             }
                         }
 
+                        //Verifica si hay resultados tras aplicar los filtros
                         val hayResultados by remember {
                             derivedStateOf {
                                 recetasFiltradas.value.isNotEmpty()

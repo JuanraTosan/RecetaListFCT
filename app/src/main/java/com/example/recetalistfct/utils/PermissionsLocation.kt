@@ -3,11 +3,7 @@ package com.example.recetalistfct.utils
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
 fun hasLocationPermissions(context: Context): Boolean {
@@ -16,17 +12,14 @@ fun hasLocationPermissions(context: Context): Boolean {
     return fine == PackageManager.PERMISSION_GRANTED && coarse == PackageManager.PERMISSION_GRANTED
 }
 
-/*
-fun requestLocationPermissions(context: Context) {
-    ActivityCompat.requestPermissions(
-        context as ComponentActivity,
-        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-        REQUEST_LOCATION_PERMISSION
-    )
-}
-
+/**
+ * Obtiene la última ubicación conocida del dispositivo.
+ *
+ * Si la ubicación está disponible, llama al callback `onLocationReceived` con las coordenadas.
+ *
+ * @param context Contexto desde el cual se solicita la ubicación.
+ * @param onLocationReceived Callback que recibe la latitud y longitud como parámetros.
  */
-
 fun getCurrentLocation(context: Context, onLocationReceived: (latitude: Double, longitude: Double) -> Unit) {
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 

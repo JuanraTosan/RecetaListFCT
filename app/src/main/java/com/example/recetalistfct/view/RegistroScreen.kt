@@ -1,5 +1,6 @@
 package com.example.recetalistfct.view
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,19 +26,39 @@ import androidx.navigation.NavHostController
 import com.example.recetalistfct.R
 import com.example.recetalistfct.controller.UsuarioController
 
+
+/**
+ * Pantalla de registro para nuevos usuarios.
+ *
+ * Permite al usuario:
+ * -Introducir nombre de usuario, correo electrónico y contraseña.
+ * -Confirmar la contraseña
+ * -Registrar una nueva cuenta o navegar a la pantalla de inicio de sesión
+ *
+ * Los campos introducidos se guardan frente a rotaciones de pantalla gracias a 'rememberSaveable'.
+ *
+ * @param navController Conrolador de navegación para cambiar entre pantallas.
+ */
 @Composable
 fun RegistroScreen(navController: NavHostController) {
-    // Estados para los campos de texto y mensajes de error
+    // Campos de texto para los datos del nuevo usuario
     var username by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
+
+    //Estado para mostrar mensajes de error al usuario
     var errorMessage by rememberSaveable { mutableStateOf("") }
 
     val context = LocalContext.current
-    //Lo usamos para quitar el teclado de la pantalla:
     val focusManager = LocalFocusManager.current
 
+    /**
+     * Capa principal con:
+     * - Fondo degradado.
+     * - Detección de toques para limpiar el foco del teclado
+     * - Logo centrado en la parte superior.
+     */
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -51,7 +72,7 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             )
     ) {
-        // Imagen del logo
+        // Logo de la aplicación
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
@@ -63,6 +84,7 @@ fun RegistroScreen(navController: NavHostController) {
             contentScale = ContentScale.Crop
         )
 
+        //Contenido principal: Formulario de registro
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -71,7 +93,7 @@ fun RegistroScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título
+            // Título de la pantalla
             Text(
                 text = stringResource(R.string.register),
                 style = MaterialTheme.typography.titleLarge,
@@ -80,7 +102,7 @@ fun RegistroScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campos de entrada
+            // Campo para el nombre de usuario
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -95,6 +117,7 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             )
 
+            //Campo para el correo electronico
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -109,6 +132,7 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             )
 
+            //Campo para la contraseña
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -124,6 +148,7 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             )
 
+            //Campo para confirmar la contraseña
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
@@ -139,7 +164,7 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             )
 
-            // Mostrar mensaje de error
+            // Mostrar mensaje de error si hay alguno
             if (errorMessage.isNotBlank()) {
                 Text(
                     text = errorMessage,
@@ -151,7 +176,7 @@ fun RegistroScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón de registro
+            // Botón para registrar al nuevo usuario
             Button(
                 onClick = {
                     when {
@@ -168,6 +193,9 @@ fun RegistroScreen(navController: NavHostController) {
                                 password = password,
                                 context = context,
                                 onSuccess = {
+
+                                    Toast.makeText(context, "Te has registrado con éxito", Toast.LENGTH_SHORT).show()
+
                                     navController.navigate("login"){
                                         popUpTo("register"){inclusive = true}
                                     }
@@ -187,7 +215,7 @@ fun RegistroScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Enlace a iniciar sesión
+            // Enlace para navegar a la pantalla de inicio de sesión
             TextButton(onClick = { navController.navigate("login") }) {
                 Text(stringResource(R.string.already_have_account_login))
             }
